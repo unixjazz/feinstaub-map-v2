@@ -1,16 +1,32 @@
 import leaflet from 'leaflet';
 import hash from 'leaflet-hash';
-import * as d3 from "d3";
 import 'leaflet/dist/leaflet.css';
-import './../css/style.css';
-//import './../js/hexbin.js';
 
+//use d3-require to call from the internet
+
+import * as d3Selection from'd3-selection';
+import * as d3Timer from'd3-timer';
+import * as d3TimeFormat from'd3-time-format';
+import * as d3Scale from'd3-scale';
+import * as d3Array from'd3-array';
+import * as d3Geo from'd3-geo';
+import * as d3Queue from'd3-queue';
+import * as d3Request from'd3-request';
+import * as d3Time from'd3-time';
 import * as d3Hexbin from "d3-hexbin";
+import * as d3Transistion from "d3-transition";
 
-const hexbin = d3Hexbin.hexbin();
+const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Queue,d3Request,d3Time,d3Hexbin,d3Transistion);
 
-//var L = require('leaflet');
-//var d3 = require('d3');
+import './../css/style.css';
+import './../js/places.js';
+import './../js/zooms.js';
+
+
+//MAP
+
+
+//const hexbin = d3Hexbin.hexbin();
 
 var hexagonheatmap;
 var hmhexaPM_aktuell;
@@ -113,34 +129,10 @@ var locale = d3.timeFormatLocale({
 		};
 	};
 
-//window.onpopstate = function(event) {
-//	if ((typeof location.search !== 'undefined') && (typeof location.hash !== 'undefined') && (location.hash !== '')) {
-//		if (typeof location.pathname !== 'undefined') {
-//			var path = location.pathname;
-//			path = path.substring(0, path.lastIndexOf('/') + 1);
-//		} else {
-//			var path = "/";
-//		}
-//
-//		var new_location = location.protocol+'//'+location.host+path;
-//		if (typeof location.hash !== 'undefined') {
-//			new_location += location.hash;
-//		}
-//		console.log("New location: "+new_location);
-////		location.replace(new_location);
-//		history.pushState('remove_query', null, new_location);
-//	} 
-//};
-//
-//
-//
-
 	if (location.hash) {
 		var hash_params = location.hash.split("/");
 		var cooCenter = [hash_params[1],hash_params[2]];
 		var zoomLevel = hash_params[0].substring(1);
-//	} else if (location.hostname.split(".").length == 4){
-
 	} else {
 		var hostname = location.hostname;
 		var hostname_parts = hostname.split(".");
@@ -163,14 +155,6 @@ var locale = d3.timeFormatLocale({
 	};
 
 	window.onload=function(){
-
-//		if (!navigator.geolocation){
-//			console.log("Geolocation is not supported by your browser");
-//		};
-//
-//		navigator.geolocation.getCurrentPosition(success, error);
-
-//		map.setView([50.495171, 9.730827], 6);
 
 		map.setView(cooCenter, zoomLevel);
 
@@ -201,45 +185,18 @@ var locale = d3.timeFormatLocale({
 	}, 300000);
 
  
-	map.on('moveend', function() { 
-
-		hexagonheatmap._zoomChange();
-
-	});
-
-//	REVOIR LES idselec!
-
-	map.on('move', function() { 
-//		div.style("display", "none");
-//		idselec1=0;
-//		idselec0=0;
-	});
-
-//	map.on('dblclick', function() { 
-//		div.style("display", "none");
-//		idselec1=0;
-//		idselec0=0;
-//	});
-//
-//	map.on('click', function() { 
-//		div.style("display", "none");
-//			idselec1=0;
-//			idselec0=0;
-//	});
+	map.on('moveend', function() {hexagonheatmap._zoomChange();});
+	map.on('move', function() {});
 
 //	REVOIR LE DOUBLECLIQUE
 
 	map.on('click', function(e) {
 		map.setView([e.latlng.lat, e.latlng.lng], map.getZoom()); 
-//		idselec1=0;
-//		idselec0=0;
 	});
 
 };
 
 map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
-
-//hash = new L.Hash(map);
 
 new L.Hash(map);
 
@@ -460,22 +417,6 @@ function getRightValue(array,type){
 	return value;
 };
 
-//function success(position) {
-//	var latitude  = position.coords.latitude;
-//	var longitude = position.coords.longitude;
-//
-//	console.log("OK POSITION");
-//
-//	L.marker([latitude,longitude]).addTo(map);
-//
-//	map.setView([latitude, longitude], 10);
-//
-//};
-
-//function error() {
-//	console.log("Unable to retrieve your location");
-//};
-
 
 function color(val){
 	var col= parseInt(val);
@@ -513,44 +454,56 @@ function interpolColor(a, b, amount) {
 	return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
 };
 
-function drop() {
-	document.getElementById("control").classList.toggle("show");
-	idselec1=0;
-	idselec0=0;
-}
+//MENU
 
-function openSideBar(){
-	var x = document.getElementById("sidebar");
-	if (x.style.display === "block") {
+
+var menu = document.getElementById("menu");
+menu.addEventListener("click", function(e) {
+    
+    	var x = document.getElementById("sidebar");
+
+    
+    	if (x.style.display === "block") {
 		x.style.display = "none";
-
-		if(openenedTab = true && !d3.select("#results").empty()){
-
-			d3.select("#results").remove();
-			openenedTab = false;
-
-		};
-
+        
+        if(openenedTab = true && !d3.select("#results").empty()){
+           
+           d3.select("#results").remove();
+           openenedTab = false;
+           
+           };
+        
+        
 	} else {
 		x.style.display = "block";
 	};
-};
+    
+    
+    
+});
 
-function openErklaerung(){
-	var x = document.getElementById("map-info");
-
-	console.log(x.style.display);
+var erkl = document.getElementById("erklaerung");
+erkl.addEventListener("click", function(e) {
+    
+  var x = document.getElementById("map-info");
+    
+    console.log(x.style.display);
 	if (x.style.display === "none") {
 		x.style.display = "block";
-//		x.style.display = "inline-block";
-		document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
+//        		x.style.display = "inline-block";
+
+        document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
 	} else {
 		x.style.display = "none";
-		document.getElementById("erklaerung").innerHTML = "Erklärung einblenden"
+        document.getElementById("erklaerung").innerHTML = "Erklärung einblenden"
 	};
-};
+    
+    
+});
 
 
+
+//HEXBINS
 
 L.HexbinLayer = L.Layer.extend({
 	_undef (a) { return typeof a === 'undefined' },
@@ -740,9 +693,7 @@ L.HexbinLayer = L.Layer.extend({
 	_createHexagons(g, data, projection) {
 		// Create the bins using the hexbin layout
 
-		let hexbin = d3Hexbin.hexbin()
-//		let hexbin = d3Hexbin()
-//			.radius(this.options.radius / projection.scale)
+		let hexbin = d3.hexbin()
 			.radius(this.getFlexRadius() / projection.scale)
 			.x( (d) => d.point.x )
 			.y( (d) => d.point.y )
@@ -968,10 +919,10 @@ function displayGraph(sens) {
 		var iddiv = "#graph_"+sens;
 
 		var td = d3.select(iddiv).append("td")
-				.attr("id", "frame_"+sens)
-				.attr("colspan", "2")
-//				.attr("onclick","removeTd("+sens+")")
-				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+			.attr("id", "frame_"+sens)
+			.attr("colspan", "2")
+//			.attr("onclick","removeTd("+sens+")")
+			.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
 
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
 
@@ -982,46 +933,6 @@ function displayGraph(sens) {
 
 	};
 
-//
-//
-//	idselec1 = sens;
-//
-//	if (idselec1 != idselec0){
-//		idselec0 = sens;
-//
-//		if (!openedGraph.includes(sens)){openedGraph.push(sens);};
-//
-//		console.log(openedGraph);
-//
-//		var iddiv = "#graph_"+sens;
-//
-//		var test = d3.select(iddiv).select("#frame_"+sens).empty();
-//
-//		console.log(test);
-//		console.log(sens);
-//
-//		console.log(test);
-//
-//		if (test ==true) {
-//
-//			console.log(sens+" OK");
-//
-////		REVOIR LES GRAPH DANS TABLEAU
-//
-//			var td = d3.select(iddiv).append("td")
-//					.attr("id", "frame_"+sens)
-//					.attr("colspan", "2")
-////				.attr("onclick","removeTd("+sens+")")
-//					.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-//
-//			document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
-//
-//		} else {
-//			document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
-//			removeTd(sens);
-//		};
-//	};
-//
 };
 
 function removeTd(id){
@@ -1049,4 +960,137 @@ function removeInArray(array) {
 	console.log(array);
 
 	return array;
-};
+}
+
+//SELECT
+
+var x, i, j, selElmnt, a, b, c;
+/*look for any elements with the class "custom-select":*/
+x = document.getElementsByClassName("custom-select");
+for (i = 0; i < x.length; i++) {
+  selElmnt = x[i].getElementsByTagName("select")[0];
+  /*for each element, create a new DIV that will act as the selected item:*/
+  a = document.createElement("DIV");
+  a.setAttribute("class", "select-selected");
+  a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+  x[i].appendChild(a);
+  /*for each element, create a new DIV that will contain the option list:*/
+  b = document.createElement("DIV");
+  b.setAttribute("class", "select-items select-hide");
+  
+    for (j = 0; j < selElmnt.length; j++) {
+     if (selElmnt.options[j].value != selector1){
+      
+    /*for each option in the original select element,
+    create a new DIV that will act as an option item:*/
+    c = document.createElement("DIV");
+    c.innerHTML = selElmnt.options[j].innerHTML;         
+    c.addEventListener("click", function(e) {
+        /*when an item is clicked, update the original select box,
+        and the selected item:*/
+        var y, i, k, s, h;
+        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+        h = this.parentNode.previousSibling;
+        for (i = 0; i < s.length; i++) {
+          if (s.options[i].innerHTML == this.innerHTML) {
+              
+            reload(s.options[i].value);
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+            
+             console.log(h.value);
+              console.log(this.innerHTML);
+              
+            y = this.parentNode.getElementsByClassName("same-as-selected");
+            for (k = 0; k < y.length; k++) {
+              y[k].removeAttribute("class");
+            }
+            this.setAttribute("class", "same-as-selected");            
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);  
+  }
+  }
+    
+  x[i].appendChild(b);
+  a.addEventListener("click", function(e) {
+      /*when the select box is clicked, close any other select boxes,
+      and open/close the current select box:*/
+      e.stopPropagation();
+      closeAllSelect(this);
+      this.nextSibling.classList.toggle("select-hide");
+      this.classList.toggle("select-arrow-active");
+    });
+}
+
+
+
+function closeAllSelect(elmnt) {
+  /*a function that will close all select boxes in the document,
+  except the current select box:*/
+  var x, y,z, i, arrNo = [],selElmnt;
+  x = document.getElementsByClassName("select-items");
+  y = document.getElementsByClassName("select-selected");
+  z = document.getElementsByClassName("same-as-selected"); 
+  selElmnt = document.getElementsByTagName("select")[0];
+  for (i = 0; i < y.length; i++) {
+    if (elmnt == y[i]) {
+      arrNo.push(i)
+        
+        
+var element = x[0];
+while (element.firstChild) {
+  element.removeChild(element.firstChild);
+    };
+               
+ for (j = 0; j < selElmnt.length; j++) {
+     
+     if (selElmnt.options[j].value != selector1){
+      
+      
+    /*for each option in the original select element,
+    create a new DIV that will act as an option item:*/
+    c = document.createElement("DIV");
+    c.innerHTML = selElmnt.options[j].innerHTML;
+    c.addEventListener("click", function(e) {
+        /*when an item is clicked, update the original select box,
+        and the selected item:*/
+        var y, i, k, s, h;
+        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+        h = this.parentNode.previousSibling;
+        for (i = 0; i < s.length; i++) {
+          if (s.options[i].innerHTML == this.innerHTML) {
+              
+            reload(s.options[i].value);
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+            y = this.parentNode.getElementsByClassName("same-as-selected");
+            for (k = 0; k < y.length; k++) {
+              y[k].removeAttribute("class");
+            }
+            this.setAttribute("class", "same-as-selected");            
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);     
+  }
+  } 
+    } else {
+      y[i].classList.remove("select-arrow-active");
+    }
+  }
+  for (i = 0; i < x.length; i++) {
+    if (arrNo.indexOf(i)) {
+      x[i].classList.add("select-hide");
+    }
+  }    
+}
+/*if the user clicks anywhere outside the select box,
+then close all select boxes:*/
+document.addEventListener("click", closeAllSelect);
+
