@@ -154,6 +154,15 @@ var locale = d3.timeFormatLocale({
 		hexagonheatmap = L.hexbinLayer(options1).addTo(map);
 
 //		REVOIR ORDRE DANS FONCTION READY
+        
+        
+        
+        var all = document.getElementsByTagName("*");
+        
+        console.log(all);
+        
+        
+        
 
 		d3.queue()
 			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
@@ -756,7 +765,7 @@ function sensorNr(data){
 			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Feuctigkeit %</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='humisens'>"+parseInt(data[0].o.data.Humi)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "druck"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='drucksens'>"+parseInt(data[0].o.data.Press/10)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='drucksens'>"+parseInt(data[0].o.data.Press)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 	};
 
