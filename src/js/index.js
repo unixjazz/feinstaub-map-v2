@@ -109,9 +109,6 @@ var locale = d3.timeFormatLocale({
 							"#fad635", "#f0a03d", "#892725"]	
 				};
 
-	var div = d3.select("body").append("div")
-				.attr("id", "tooltip")
-				.style("display", "none");
 
 	var div = d3.select("#sidebar").append("div")
 				.attr("id", "table")
