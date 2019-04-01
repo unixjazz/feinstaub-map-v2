@@ -193,7 +193,7 @@ L.HexbinLayer = L.Layer.extend({
 		// Create the bins using the hexbin layout
 
 		let hexbin = d3Hexbin.hexbin()
-//        		let hexbin = d3Hexbin()
+//			let hexbin = d3Hexbin()
 //			.radius(this.options.radius / projection.scale)
 			.radius(this.getFlexRadius() / projection.scale)
 			.x( (d) => d.point.x )
@@ -250,8 +250,8 @@ var openedGraph = [];
 function sensorNr(data){
 
 	openedGraph = [];
-    
-    dataStock = data;
+
+	dataStock = data;
 
 	var x = document.getElementById("sidebar");
 	if (x.style.display = "none") {
@@ -259,17 +259,6 @@ function sensorNr(data){
 //		document.getElementById('menu').innerHTML='Close';
 	};
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 	if (data.length == 1){
 
 		if (selector1 == "P1"){
@@ -369,14 +358,14 @@ function sensorNr(data){
 	div.transition()
 		.duration(200)
 		.style("display", "block");
-//    		.style("display", "inline-block");
+//		.style("display", "inline-block");
 
-//    .style("display", "inline");
+//		.style("display", "inline");
 
 
 	div.html(textefin)
 //		.style("left","0px")
-        .style("padding","10px")		
+		.style("padding","10px")		
 		.style("top","100px");
 };
 
@@ -422,38 +411,30 @@ function formula(Ih,Il,Ch,Cl,C){
 
 function displayGraph(sens) {
 
+	if (!openedGraph.includes(sens)){
 
-		if (!openedGraph.includes(sens)){
-            
-            openedGraph.push(sens);
-        
-        
-        		console.log(openedGraph);
+		openedGraph.push(sens);
 
-        		var iddiv = "#graph_"+sens;
+		console.log(openedGraph);
 
-        
-        var td = d3.select(iddiv).append("td")
-				.attr("id", "frame_"+sens)
-				.attr("colspan", "2")
-//				.attr("onclick","removeTd("+sens+")")
-				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-            
-            document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
-                        
-        }else{
-            
-            document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
-            removeTd(sens);
-            
-            
-        };
+		var iddiv = "#graph_"+sens;
 
+		var td = d3.select(iddiv).append("td")
+			.attr("id", "frame_"+sens)
+			.attr("colspan", "2")
+//			.attr("onclick","removeTd("+sens+")")
+			.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
 
-    
-    
-//    
-//    
+		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
+
+	} else {
+
+		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
+		removeTd(sens);
+
+	};
+
+//
 //	idselec1 = sens;
 //
 //	if (idselec1 != idselec0){
@@ -469,36 +450,31 @@ function displayGraph(sens) {
 //
 //		console.log(test);
 //		console.log(sens);
-//        
-//        console.log(test);
+//
+//		console.log(test);
 //
 //
 //		if (test ==true) {
 //
 //			console.log(sens+" OK");
 //
-////			REVOIR LES GRAPH DANS TABLEAU
+////		REVOIR LES GRAPH DANS TABLEAU
 //
 //			var td = d3.select(iddiv).append("td")
 //				.attr("id", "frame_"+sens)
 //				.attr("colspan", "2")
-////				.attr("onclick","removeTd("+sens+")")
+////			.attr("onclick","removeTd("+sens+")")
 //				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-//            
-//            document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
-//                        
-//		}else{
-//            document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
-//            removeTd(sens);
-//        };
+//
+//			document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
+//
+//		} else {
+//			document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
+//			removeTd(sens);
+//		};
 //	};
-//    
-//    
-//    
-//    
-    
-      
-    
+//
+
 };
 
 function removeTd(id){
