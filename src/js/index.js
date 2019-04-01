@@ -25,9 +25,6 @@ import './../js/zooms.js';
 
 //MAP
 
-
-//const hexbin = d3Hexbin.hexbin();
-
 var hexagonheatmap;
 var hmhexaPM_aktuell;
 var hmhexaPM_24Stunden;
@@ -37,10 +34,8 @@ var hmhexadruck;
 
 var map;
 var tiles;
-//var hash;
 
 var selector1 = "P1";
-
 var P1orP2 = "";
 
 var places;
@@ -50,10 +45,11 @@ var oriAQI;
 
 var openenedTab = false;
 
-var dataStock;
+
+var openedGraph1 = [];
+var openedGraph2 = [];
 
 
-//EN FAIRE 2 pou PM et H/T/P
 var locale = d3.timeFormatLocale({
 	"dateTime": "%Y.%m.%d %H:%M:%S",
 	"date": "%d.%m.%Y",
@@ -158,6 +154,15 @@ var locale = d3.timeFormatLocale({
 		hexagonheatmap = L.hexbinLayer(options1).addTo(map);
 
 //		REVOIR ORDRE DANS FONCTION READY
+        
+        
+        
+        var all = document.getElementsByTagName("*");
+        
+        console.log(all);
+        
+        
+        
 
 		d3.queue()
 			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
@@ -295,10 +300,7 @@ function makeHexagonmap(data,option){
 };
 
 function reload(val){
-	console.log(val);
-
-//	div.style("display", "none");
-	d3.selectAll('path.hexbin-hexagon').remove();
+    d3.selectAll('path.hexbin-hexagon').remove();
 
 	switch(val) {
 		case "P1":
@@ -389,20 +391,13 @@ function reload(val){
 		document.getElementById('legenddruck').style.visibility='visible';
 	}; 
 
-	if (openedGraph.length >0){
-
-		openedGraph.forEach(function(item){
-
-			removeSvg2(item);
-			displayGraph(item);
+	if (openedGraph1.length >0){
+		openedGraph1.forEach(function(item){
+			displayGraph(item,1);
 
 		});
 
 	};
-
-//	buildMenu();
-
-//	sensorNr(dataStock);
 
 };
 
@@ -740,14 +735,11 @@ L.hexbinLayer = function(options) {
 };
 
 
-
-var openedGraph = [];
-
 function sensorNr(data){
 
-	openedGraph = [];
+	openedGraph1 = [];
+    openedGraph2 = [];
 
-	dataStock = data;
 
 	var x = document.getElementById("sidebar");
 	if (x.style.display = "none") {
@@ -758,22 +750,22 @@ function sensorNr(data){
 	if (data.length == 1){
 
 		if (selector1 == "P1"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>PM10 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='P1sens'>"+parseInt(data[0].o.data.PM10)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>PM10 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='P1sens'>"+parseInt(data[0].o.data.PM10)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "P2"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>PM2.5 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='P2sens'>"+parseInt(data[0].o.data.PM25)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>PM2.5 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='P2sens'>"+parseInt(data[0].o.data.PM25)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "officialus"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>AQI US</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='AQIsens'>"+parseInt(officialaqius(data[0].o.data))+" ("+oriAQI+")</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>AQI US</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='AQIsens'>"+parseInt(officialaqius(data[0].o.data))+" ("+oriAQI+")</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "temp"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Temperature °C</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='tempsens'>"+parseInt(data[0].o.data.Temp)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Temperature °C</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='tempsens'>"+parseInt(data[0].o.data.Temp)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "humi"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Feuctigkeit %</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='humisens'>"+parseInt(data[0].o.data.Humi)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Feuctigkeit %</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='humisens'>"+parseInt(data[0].o.data.Humi)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 		if (selector1 == "druck"){
-			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+" onclick='displayGraph("+data[0].o.id+")'>(+) #"+data[0].o.id+"</td><td id='drucksens'>"+parseInt(data[0].o.data.Press/10)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th><th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='drucksens'>"+parseInt(data[0].o.data.Press)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 	};
 
@@ -785,7 +777,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='P1sens'>"+i.o.data.PM10+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='P1sens'>"+i.o.data.PM10+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 
 			var textefin = texte + sensors + "</table>";
@@ -797,7 +789,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='P2sens'>"+i.o.data.PM25+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='P2sens'>"+i.o.data.PM25+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 
 			var textefin = texte + sensors + "</table>";
@@ -809,7 +801,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='AQIsens'>"+officialaqius(i.o.data)+" ("+oriAQI+")</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='AQIsens'>"+officialaqius(i.o.data)+" ("+oriAQI+")</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 
 			var textefin = texte + sensors + "</table>";
@@ -822,7 +814,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='tempsens'>"+i.o.data.Temp+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='tempsens'>"+i.o.data.Temp+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 
 			var textefin = texte + sensors + "</table>";
@@ -835,7 +827,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='humisens'>"+i.o.data.Humi+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='humisens'>"+i.o.data.Humi+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 
 			var textefin = texte + sensors + "</table>";
@@ -845,7 +837,7 @@ function sensorNr(data){
 			var sensors = '';
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+" onclick='displayGraph("+i.o.id+")'>(+) #"+i.o.id+"</td><td id='drucksens'>"+i.o.data.Press.toFixed(1)+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='drucksens'>"+i.o.data.Press.toFixed(1)+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 			var textefin = texte + sensors + "</table>";
 		};
@@ -855,7 +847,6 @@ function sensorNr(data){
 		.duration(200)
 		.style("display", "block");
 //		.style("display", "inline-block");
-
 //		.style("display", "inline");
 
 
@@ -863,6 +854,15 @@ function sensorNr(data){
 //		.style("left","0px")
 		.style("padding","10px")		
 		.style("top","100px");
+    
+        
+    d3.selectAll(".idsens").on("click", function() {
+            
+        displayGraph(d3.select(this).attr("value"),0);
+    
+    });
+    
+    
 };
 
 function aqius(val,type){
@@ -905,20 +905,23 @@ function formula(Ih,Il,Ch,Cl,C){
 };
 
 
-function displayGraph(sens) {
+function displayGraph(sens,option) {
+    
+    
+    if (option == 0 ){
 
-	if (!openedGraph.includes(sens)){
+	if (!openedGraph1.includes(sens)){
 
-		openedGraph.push(sens);
+		openedGraph1.push(sens);
 
-		console.log(openedGraph);
+//		console.log(openedGraph1);
+//        console.log(openedGraph2);
 
 		var iddiv = "#graph_"+sens;
 
 		var td = d3.select(iddiv).append("td")
 			.attr("id", "frame_"+sens)
 			.attr("colspan", "2")
-//			.attr("onclick","removeTd("+sens+")")
 			.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
 
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
@@ -928,13 +931,23 @@ function displayGraph(sens) {
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
 		removeTd(sens);
 
+	};};
+    
+    if (option == 1 ){
+        
+        var idtd = "#frame_"+sens;
+        
+        var td = d3.select(idtd)
+                .html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+        
+
 	};
 
 };
 
 function removeTd(id){
 	d3.select("#frame_"+id).remove();
-	removeInArray(openedGraph,id);
+	removeInArray(openedGraph1,id);
 };
 
 function officialaqius(data){
