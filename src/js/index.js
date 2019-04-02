@@ -62,13 +62,13 @@ var locale = d3.timeFormatLocale({
 });
 
 //	P10
-	var options1 = {
+var options1 = {
 				valueDomain: [20, 40, 60, 100, 500],
 				colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 				};
 
 //	PM2.5
-	var options2 = {
+var options2 = {
 				valueDomain: [10, 20, 40, 60, 100],
 				colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 				};
@@ -83,22 +83,22 @@ var locale = d3.timeFormatLocale({
 //				colorRange: ['#00E400','#00E400','#FFFF00','#FFFF00','#FF7E00', '#FF7E00','#FF0000', '#FF0000','rgb(143, 63, 151)', 'rgb(143, 63, 151)','#7E0023','#7E0023']	
 //				};
 
-	var options3 = {
+var options3 = {
 				valueDomain: [0,50,100,150,200,300],
 				colorRange: ['#00E400','#FFFF00','#FF7E00','#FF0000','rgb(143, 63, 151)','#7E0023']	
 				};
 
-	var options4 = {
+var options4 = {
 				valueDomain: [-20, 0, 50],
 				colorRange: ['#0022FE', '#FFFFFF', '#FF0000']	
 				};
 
-	var options5 = {
+var options5 = {
 				valueDomain: [0,100],
 				colorRange: ['#FFFFFF', '#0000FF']	
 				};
 
-	var options6 = {
+var options6 = {
 				valueDomain: [926, 947.75, 969.50, 991.25, 1013, 1034.75, 1056.50, 1078.25, 1100],
 				colorRange: ["#dd2e97", "#6b3b8f", "#2979b9",
 							"#02B9ed", "#13ae52", "#c9d841",
@@ -106,72 +106,67 @@ var locale = d3.timeFormatLocale({
 				};
 
 
-	var div = d3.select("#sidebar").append("div")
+var div = d3.select("#sidebar").append("div")
 				.attr("id", "table")
 				.style("display", "none");
 
-	var tooltipDiv = document.getElementsByClassName('tooltip-div');
+var tooltipDiv = document.getElementsByClassName('tooltip-div');
 
-	window.onmousemove = function (e) {
-		var x = e.clientX,
-		y = e.clientY;
+window.onmousemove = function (e) {
+	var x = e.clientX,
+	y = e.clientY;
 
-		for (var i = 0; i < tooltipDiv.length; i++) {
-			tooltipDiv.item(i).style.top = (y - 10 )+ 'px';
-			tooltipDiv.item(i).style.left = (x + 20) + 'px';
-		};
+	for (var i = 0; i < tooltipDiv.length; i++) {
+		tooltipDiv.item(i).style.top = (y - 10 )+ 'px';
+		tooltipDiv.item(i).style.left = (x + 20) + 'px';
 	};
+};
 
-	if (location.hash) {
-		var hash_params = location.hash.split("/");
-		var cooCenter = [hash_params[1],hash_params[2]];
-		var zoomLevel = hash_params[0].substring(1);
-	} else {
-		var hostname = location.hostname;
-		var hostname_parts = hostname.split(".");
-		if (hostname_parts.length == 4) {
-			var place = hostname_parts[0].toLowerCase();
-			console.log(place);
-			if (typeof places[place] !== 'undefined' && places[place] !== null) {
-				var cooCenter = places[place];
-				var zoomLevel = 11;
-			}
-			if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) {
-				var zoomLevel = zooms[place];
-			}
-			console.log("Center: "+cooCenter);
-			console.log("Zoom: "+zoomLevel)
-		} else {
-			var cooCenter = [50.495171, 9.730827];
-			var zoomLevel = 6;
+if (location.hash) {
+	var hash_params = location.hash.split("/");
+	var cooCenter = [hash_params[1],hash_params[2]];
+	var zoomLevel = hash_params[0].substring(1);
+} else {
+	var hostname = location.hostname;
+	var hostname_parts = hostname.split(".");
+	if (hostname_parts.length == 4) {
+		var place = hostname_parts[0].toLowerCase();
+		console.log(place);
+		if (typeof places[place] !== 'undefined' && places[place] !== null) {
+			var cooCenter = places[place];
+			var zoomLevel = 11;
 		}
-	};
+		if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) {
+			var zoomLevel = zooms[place];
+		}
+		console.log("Center: "+cooCenter);
+		console.log("Zoom: "+zoomLevel)
+	} else {
+		var cooCenter = [50.495171, 9.730827];
+		var zoomLevel = 6;
+	}
+};
 
-	window.onload=function(){
+window.onload=function(){
 
-		map.setView(cooCenter, zoomLevel);
+	map.setView(cooCenter, zoomLevel);
 
-		hexagonheatmap = L.hexbinLayer(options1).addTo(map);
+	hexagonheatmap = L.hexbinLayer(options1).addTo(map);
 
-//		REVOIR ORDRE DANS FONCTION READY
-        
-        
-        
-        var all = document.getElementsByTagName("*");
-        
-        console.log(all);
-        
-        
-        
+//	REVOIR ORDRE DANS FONCTION READY
 
-		d3.queue()
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.24h.json")
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.temp.min.json")
+	var all = document.getElementsByTagName("*");
+        
+	console.log(all);
 
-			.awaitAll(ready); 
+	d3.queue()
+		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
+		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.24h.json")
+		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.temp.min.json")
 
-		d3.interval(function(){
+		.awaitAll(ready); 
+
+	d3.interval(function(){
 
 		d3.selectAll('path.hexbin-hexagon').remove();
 
@@ -186,7 +181,6 @@ var locale = d3.timeFormatLocale({
 
 	}, 300000);
 
- 
 	map.on('moveend', function() {hexagonheatmap._zoomChange();});
 	map.on('move', function() {});
 
@@ -201,7 +195,6 @@ var locale = d3.timeFormatLocale({
 map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
 
 new L.Hash(map);
-
 
 tiles = L.tileLayer('https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png',{
 			attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
@@ -302,99 +295,53 @@ function makeHexagonmap(data,option){
 function reload(val){
     d3.selectAll('path.hexbin-hexagon').remove();
 
-	switch(val) {
+	console.log(val);
+	
+	selector1 = val;
+
+	document.getElementById('legendaqius').style.visibility='hidden';
+	document.getElementById('legendpm').style.visibility='hidden';
+	document.getElementById('legendpm2').style.visibility='hidden';
+	document.getElementById('legendtemp').style.visibility='hidden';
+	document.getElementById('legendhumi').style.visibility='hidden';
+	document.getElementById('legenddruck').style.visibility='hidden';
+
+	switch (val) {
 		case "P1":
-			selector1 = "P1";
-			break;
+					hexagonheatmap.initialize(options1);
+					hexagonheatmap.data(hmhexaPM_aktuell);
+					document.getElementById('legendpm').style.visibility='visible';
+					break;
 		case "P2":
-			selector1 = "P2";
-			break;
+					hexagonheatmap.initialize(options2);
+					hexagonheatmap.data(hmhexaPM_aktuell); 
+					document.getElementById('legendpm2').style.visibility='visible';
+					break;
 		case "officialus":
-			selector1 = "officialus";
-			break;
+					hexagonheatmap.initialize(options3);
+					hexagonheatmap.data(hmhexaPM_24Stunden); 
+					document.getElementById('legendaqius').style.visibility='visible';
+					break;
 		case "temp":
-			selector1 = "temp";
-			break;
+					hexagonheatmap.initialize(options4);
+					hexagonheatmap.data(hmhexatemp); 
+					document.getElementById('legendtemp').style.visibility='visible';
+					break;
 		case "humi":
-			selector1 = "humi";
-			break;
+					hexagonheatmap.initialize(options5);
+					hexagonheatmap.data(hmhexahumi); 
+					document.getElementById('legendhumi').style.visibility='visible';
+					break;
 		case "druck":
-			selector1 = "druck";
-			break;
-	};
-
-	console.log(selector1);
-
-	if(selector1 == "P1"){
-		hexagonheatmap.initialize(options1);
-		hexagonheatmap.data(hmhexaPM_aktuell); 
-		document.getElementById('legendaqius').style.visibility='hidden';
-		document.getElementById('legendpm').style.visibility='visible';
-		document.getElementById('legendpm2').style.visibility='hidden';
-		document.getElementById('legendtemp').style.visibility='hidden';
-		document.getElementById('legendhumi').style.visibility='hidden';
-		document.getElementById('legenddruck').style.visibility='hidden';
-	};
-
-	if(selector1 == "P2"){
-		hexagonheatmap.initialize(options2);
-		hexagonheatmap.data(hmhexaPM_aktuell); 
-		document.getElementById('legendaqius').style.visibility='hidden';
-		document.getElementById('legendpm').style.visibility='hidden';
-		document.getElementById('legendpm2').style.visibility='visible';
-		document.getElementById('legendtemp').style.visibility='hidden';
-		document.getElementById('legendhumi').style.visibility='hidden';
-		document.getElementById('legenddruck').style.visibility='hidden';
-	};
-
-	if(selector1 == "officialus"){
-		hexagonheatmap.initialize(options3);
-		hexagonheatmap.data(hmhexaPM_24Stunden); 
-		document.getElementById('legendaqius').style.visibility='visible';
-		document.getElementById('legendpm').style.visibility='hidden';
-		document.getElementById('legendpm2').style.visibility='hidden';
-		document.getElementById('legendtemp').style.visibility='hidden';
-		document.getElementById('legendhumi').style.visibility='hidden';
-		document.getElementById('legenddruck').style.visibility='hidden';
-	};
-
-	if(selector1 == "temp"){
-		hexagonheatmap.initialize(options4);
-		hexagonheatmap.data(hmhexatemp); 
-		document.getElementById('legendaqius').style.visibility='hidden';
-		document.getElementById('legendpm').style.visibility='hidden';
-		document.getElementById('legendpm2').style.visibility='hidden';
-		document.getElementById('legendtemp').style.visibility='visible';
-		document.getElementById('legendhumi').style.visibility='hidden';
-		document.getElementById('legenddruck').style.visibility='hidden';
-	};
-
-	if(selector1 == "humi"){
-		hexagonheatmap.initialize(options5);
-		hexagonheatmap.data(hmhexahumi); 
-		document.getElementById('legendaqius').style.visibility='hidden';
-		document.getElementById('legendpm').style.visibility='hidden';
-		document.getElementById('legendpm2').style.visibility='hidden';
-		document.getElementById('legendtemp').style.visibility='hidden';
-		document.getElementById('legendhumi').style.visibility='visible';
-		document.getElementById('legenddruck').style.visibility='hidden';
-	};
-
-	if(selector1 == "druck"){
-		hexagonheatmap.initialize(options6);
-		hexagonheatmap.data(hmhexadruck); 
-		document.getElementById('legendaqius').style.visibility='hidden';
-		document.getElementById('legendpm').style.visibility='hidden';
-		document.getElementById('legendpm2').style.visibility='hidden';
-		document.getElementById('legendtemp').style.visibility='hidden';
-		document.getElementById('legendhumi').style.visibility='hidden';
-		document.getElementById('legenddruck').style.visibility='visible';
-	}; 
+					hexagonheatmap.initialize(options6);
+					hexagonheatmap.data(hmhexadruck); 
+					document.getElementById('legenddruck').style.visibility='visible';
+					break;
+	}
 
 	if (openedGraph1.length >0){
 		openedGraph1.forEach(function(item){
 			displayGraph(item,1);
-
 		});
 
 	};
@@ -451,46 +398,34 @@ function interpolColor(a, b, amount) {
 
 var menu = document.getElementById("menu");
 menu.addEventListener("click", function(e) {
-    
-    	var x = document.getElementById("sidebar");
 
-    
-    	if (x.style.display === "block") {
+	var x = document.getElementById("sidebar");
+
+	if (x.style.display === "block") {
 		x.style.display = "none";
-        
-        if(openenedTab = true && !d3.select("#results").empty()){
-           
-           d3.select("#results").remove();
-           openenedTab = false;
-           
-           };
-        
-        
+		if(openenedTab = true && !d3.select("#results").empty()){
+			d3.select("#results").remove();
+			openenedTab = false;
+		};
 	} else {
 		x.style.display = "block";
 	};
-    
-    
-    
 });
 
 var erkl = document.getElementById("erklaerung");
 erkl.addEventListener("click", function(e) {
+
+	var x = document.getElementById("map-info");
     
-  var x = document.getElementById("map-info");
-    
-    console.log(x.style.display);
+	console.log(x.style.display);
 	if (x.style.display === "none") {
 		x.style.display = "block";
-//        		x.style.display = "inline-block";
-
-        document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
+//		x.style.display = "inline-block";
+		document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
 	} else {
 		x.style.display = "none";
-        document.getElementById("erklaerung").innerHTML = "Erklärung einblenden"
+		document.getElementById("erklaerung").innerHTML = "Erklärung einblenden";
 	};
-    
-    
 });
 
 
