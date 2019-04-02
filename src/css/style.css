@@ -16,18 +16,6 @@ body { height: 100%;
         z-index: 0;
         }    
 
-#control{
-        font-family: arial, sans-serif;
-        color:black;
-        font-size: 14px;
-        position:absolute;
-        top:20px;
-        width: 150px;
-        height: auto;
-        z-index: 1000;
-        background:rgb(255, 255, 255,1.0);
-        }
-
 #update{
         font-family: arial, sans-serif;
         color:black;
@@ -56,61 +44,20 @@ body { height: 100%;
     height:auto;
 }
 
-/*
-select{
-        font-family: arial, sans-serif;
-        color:black;
-        font-weight: bold;
-        font-size: 14px;
-        position:absolute;
-        bottom:40px;
-        left:500px;
-        width: 100px;
-        height: auto;
-        z-index: 1000;
-        background:#3498DB;
-        border-radius: 5px;
-    border: 0px;
-    border-color:#303030;
-    border-style: solid;
-}
-
-        
-select option {
-                background:#3498DB;
-            }
-*/
-
-
-
 .custom-select {
-    
-/*
-    position: relative;
-  display: inline-block;
-    
-*/
-    
-/*  position: relative;*/
-  font-family: arial, sans-serif;
+    font-family: arial, sans-serif;
     color:black;
     font-weight: bold;
     font-size: 14px;
-        position:absolute;
-        top:40px;
-        left:500px;
-        width: 200px;
-        height: auto;
-        z-index: 1000;
-        background:#3498DB;
-/*        padding: 8px;*/
+    position:absolute;
+    top:40px;
+    left:500px;
+    width: 200px;
+    height: auto;
+    z-index: 1000;
+    background:#3498DB;
     border-radius: 8px;
     border: 0px;
-/*
-    border-color:#303030;
-    border-style: solid;
-*/
-    
 }
 
 .custom-select select {
@@ -140,30 +87,22 @@ select option {
 
 /*style the items (options), including the selected item:*/
 .select-items div,.select-selected {
-  color: #ffffff;
-  padding: 8px 16px;
-  border: 1px solid transparent;
+    color: #ffffff;
+    padding: 8px 16px;
+    border: 1px solid transparent;
     border-radius: 8px;
     background-color: #3498DB;
-  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
-  cursor: pointer;
-  user-select: none;
-    
-    
-/*    display: block;*/
-    
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+    cursor: pointer;
+    user-select: none;    
 }
 
-/*style items (options):*/
 .select-items {
   position: absolute;
-/*  background-color: #3498DB;*/
   top: 100%;
   left: 0;
   right: 0;
   z-index: 99;   
-
-
 }
 
 /*hide the items when the select box is closed:*/
@@ -186,15 +125,12 @@ select option {
 }
 
 #map-info{
-    
     padding: 10px;
     font-family: arial, sans-serif;
     color:black;
 }
 
-
-
-  .legend {
+.legend {
     font-family: arial, sans-serif;
     color:black;
     font-size: 15px; 
@@ -250,8 +186,6 @@ select option {
 #legend-inner-pm .labels .label:before {
         content: '\2013   ';
         }
-
-
 
 
 #legend-inner-pm2 {
@@ -441,9 +375,6 @@ li {
     z-index:1000;
 }
 
-
-
-
 ul {
     display: block;
     list-style-type: disc;
@@ -453,9 +384,6 @@ ul {
     -webkit-margin-end: 0px;
     -webkit-padding-start: 40px;
 }
-
-
-
 
 .leaflet-pane > svg .d3-overlay path{
     cursor:help;
@@ -485,7 +413,6 @@ td{
         padding-right: 5px;
         border-width: 1px 1px 0px 1px;
         border-style: solid;
-/*        background:rgba(255, 255, 255, 0.5);*/
         }
 
 th{
@@ -507,13 +434,11 @@ tr{
   cursor: pointer;     
 }
 
-
-
 #table {
-  position: absolute;
-  text-align: center;
-  padding: 8px;
-  margin-top: -20px;
+    position: absolute;
+    text-align: center;
+    padding: 8px;
+    margin-top: -20px;
     font-weight:bold;
     font-family: arial, sans-serif;
     color:black;
@@ -525,65 +450,12 @@ tr{
     z-index: 1000;    
     max-height: 90vh;
     top:10vh;
-  overflow-y: auto;
-    
-/*display:inline-block;*/
+    overflow-y: auto;
 }
 
 .hexbin-hexagon{
     stroke-width:0px;
 }
-
-
-.dropbtn {
-    background-color: #3498DB;
-    color: white;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-}
-
-.dropbtn:hover, .dropbtn:focus {
-    background-color: #2980B9;
-}
-
-.dropdown {
-    position: relative;
-    display: inline-block;
-    z-index:1000;
-    float:left;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f1f1f1;
-    min-width: 160px;
-    overflow: auto;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-.dropdown-content div {
-    display: block;
-}
-
-.dropdown a:hover {background-color: #ddd}
-
-.show {display:block;}
-
-.line1 {
-  fill: none;
-  stroke: black;
-  stroke-width: 2px;
-}
-    
-.line2 {
-  fill: none;
-  stroke: black;
-  stroke-width: 2px;
-}
-
 
 
 #menu{
