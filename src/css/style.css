@@ -38,20 +38,12 @@ body {
 	background-color: rgba(56, 181, 173, 1);
 }
 
-.tooltip-div {
-	padding: 5px;
-	border-radius: 5px;
-	width:auto;
-	max-width: 500px;
-	height:auto;
-}
-
 #UI_container {
 	position: absolute;
 	left: 0px;
 	bottom: 0px;
 	width: 25em;
-	height: 30%;
+	height: 40%;
 	z-index: 1000;
 	vertical-align: bottom;
 	pointer-events: none;
@@ -71,6 +63,7 @@ body {
 	border: 1px solid transparent;
 	position: absolute;
 	bottom: 20px;
+	margin-left: 20px;
 	pointer-events: auto;
 }
 
@@ -152,6 +145,8 @@ body {
 #legendcontainer {
 	display: inline-block;
 	width: 10em;
+	height: 100%;
+	background-color: rgba(255,255,255,0.8);
 }
 
 .legend {
@@ -165,7 +160,7 @@ body {
 
 #legendpm{display: none;}
 #legendpm2{display: none;}
-#legendaqius{display: none; width: 100%; height: auto; padding:10px;}
+#legendaqius{display: none; width: 10em; height: auto; padding:10px;}
 #legendtemp{display: none}
 #legendhumi{display: none}
 #legenddruck{display: none}
@@ -245,6 +240,7 @@ body {
 li {
 	display: list-item;
 	text-align: -webkit-match-parent;
+	pointer-events: auto;
 }
 
 
@@ -263,6 +259,14 @@ li {
 	overflow:hidden;
 	background-color: rgba(56, 181, 173, 1);
 	z-index:1000;
+}
+
+.tooltip-div {
+	padding: 5px;
+	border-radius: 5px;
+	width:auto;
+	max-width: 500px;
+	height:auto;
 }
 
 ul {
