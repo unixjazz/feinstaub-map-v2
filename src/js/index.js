@@ -267,9 +267,10 @@ function ready(error,data) {
 
 	console.log(newTime);
 
-	var dateFormater = locale.format("%A, %d. %B %Y, um %H:%M:%S");
-
 //	var dateFormater = d3.timeFormat("%A %d %B %Y %H:%M:%S");
+
+//	var dateFormater = locale.format("%A, %d. %B %Y, um %H:%M:%S");
+	var dateFormater = locale.format("%H:%M:%S");
 
 	document.getElementById('update').innerHTML = "Last update: " + dateFormater(newTime);
 
@@ -299,43 +300,43 @@ function reload(val){
 	
 	selector1 = val;
 
-	document.getElementById('legendaqius').style.visibility='hidden';
-	document.getElementById('legendpm').style.visibility='hidden';
-	document.getElementById('legendpm2').style.visibility='hidden';
-	document.getElementById('legendtemp').style.visibility='hidden';
-	document.getElementById('legendhumi').style.visibility='hidden';
-	document.getElementById('legenddruck').style.visibility='hidden';
+	document.getElementById('legendaqius').style.display='none';
+	document.getElementById('legendpm').style.display='none';
+	document.getElementById('legendpm2').style.display='none';
+	document.getElementById('legendtemp').style.display='none';
+	document.getElementById('legendhumi').style.display='none';
+	document.getElementById('legenddruck').style.display='none';
 
 	switch (val) {
 		case "P1":
 					hexagonheatmap.initialize(options1);
 					hexagonheatmap.data(hmhexaPM_aktuell);
-					document.getElementById('legendpm').style.visibility='visible';
+					document.getElementById('legendpm').style.display='block';
 					break;
 		case "P2":
 					hexagonheatmap.initialize(options2);
 					hexagonheatmap.data(hmhexaPM_aktuell); 
-					document.getElementById('legendpm2').style.visibility='visible';
+					document.getElementById('legendpm2').style.display='block';
 					break;
 		case "officialus":
 					hexagonheatmap.initialize(options3);
 					hexagonheatmap.data(hmhexaPM_24Stunden); 
-					document.getElementById('legendaqius').style.visibility='visible';
+					document.getElementById('legendaqius').style.display='block';
 					break;
 		case "temp":
 					hexagonheatmap.initialize(options4);
 					hexagonheatmap.data(hmhexatemp); 
-					document.getElementById('legendtemp').style.visibility='visible';
+					document.getElementById('legendtemp').style.display='block';
 					break;
 		case "humi":
 					hexagonheatmap.initialize(options5);
 					hexagonheatmap.data(hmhexahumi); 
-					document.getElementById('legendhumi').style.visibility='visible';
+					document.getElementById('legendhumi').style.display='block';
 					break;
 		case "druck":
 					hexagonheatmap.initialize(options6);
 					hexagonheatmap.data(hmhexadruck); 
-					document.getElementById('legenddruck').style.visibility='visible';
+					document.getElementById('legenddruck').style.display='block';
 					break;
 	}
 
@@ -427,8 +428,6 @@ erkl.addEventListener("click", function(e) {
 		document.getElementById("erklaerung").innerHTML = "Erklärung einblenden";
 	};
 });
-
-
 
 //HEXBINS
 
@@ -757,14 +756,9 @@ function sensorNr(data){
 	div.transition()
 		.duration(200)
 		.style("display", "block");
-//		.style("display", "inline-block");
-//		.style("display", "inline");
-
 
 	div.html(textefin)
-//		.style("left","0px")
-		.style("padding","10px")		
-		.style("top","100px");
+		.style("padding","10px")
     
         
     d3.selectAll(".idsens").on("click", function() {
