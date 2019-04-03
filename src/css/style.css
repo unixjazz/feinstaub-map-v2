@@ -25,16 +25,17 @@ body {
 	position:absolute;
 	top:20px;
 	left:100px;
-	width: 350px;
+	width: auto;
+	padding: 5px 10px;
 	text-align: center;
 	height: auto;
 	z-index: 1000;
-	background-color: #3498DB;
+	background-color: rgba(56, 181, 173, 0.8);
 	border-radius: 5px;
 }
 
 #update:hover, #update:focus {
-	background-color: #2980B9;
+	background-color: rgba(56, 181, 173, 1);
 }
 
 .tooltip-div {
@@ -49,9 +50,11 @@ body {
 	position: absolute;
 	left: 0px;
 	bottom: 0px;
-	height: 100%;
+	width: 25em;
+	height: 30%;
 	z-index: 1000;
 	vertical-align: bottom;
+	pointer-events: none;
 }
 
 .custom-select {
@@ -62,13 +65,17 @@ body {
 	width: 15em;
 	height: auto;
 	display: inline-block;
-	background:#3498DB;
+	background-color: rgba(56, 181, 173, 0.8);
 	border-radius: 8px;
-	background-color: #3498DB;
 	border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
 	border: 1px solid transparent;
 	position: absolute;
 	bottom: 20px;
+	pointer-events: auto;
+}
+
+.custom-select:hover, .custom-select:focus {
+	background-color: rgba(56, 181, 173, 1);
 }
 
 .custom-select select {
@@ -108,7 +115,7 @@ body {
 	bottom: 100%;
 	width: 100%;
 	border-radius: 8px;
-	background-color: #3498DB;
+	background-color: rgba(56, 181, 173, 0.8);
 	border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
 	border: 1px solid transparent;
 }
@@ -119,7 +126,8 @@ body {
 }
 
 .select-items div:hover, .same-as-selected {
-	background-color: #2980B9;
+	border-radius: 8px;
+	background-color: rgba(56, 181, 173, 1);
 }
 
 .arrow {
@@ -133,7 +141,6 @@ body {
 	font-family: arial, sans-serif;
 	color:black;
 	cursor: pointer; 
-	z-index: 1000;
 }
 
 #map-info{
@@ -153,20 +160,17 @@ body {
 	font-size: 15px;
 	position: absolute;
 	bottom: 0px;
-	height: 40%;
-	background-color: rgba(238,238,238,0.0);
+	height: 100%;
 }
 
+#legendpm{display: none;}
+#legendpm2{display: none;}
+#legendaqius{display: none; width: 100%; height: auto; padding:10px;}
+#legendtemp{display: none}
+#legendhumi{display: none}
+#legenddruck{display: none}
 
-#legendpm{visibility: visible}
-#legendpm2{visibility: hidden}
-#legendaqius{visibility: hidden}
-#legendtemp{visibility: hidden}
-#legendhumi{visibility: hidden}
-#legenddruck{visibility: hidden}
-
-
-#legend-inner-pm {
+.legend-inner {
 	position: absolute;
 	left: 30px;
 	bottom: 20px;
@@ -177,169 +181,51 @@ body {
 	display: flex;
 }
 
-#legend-inner-pm .gradient {
-	opacity: 0.8;
+.legend-inner .gradient {
+	opacity: 1;
 	width: 20px;
+	position: relative;
+}
+
+.legend-inner .labels {
+	width: 10em;
+	position: relative;
+}
+
+.legend-inner .labels .label {
+	position: absolute;
+	-webkit-transform: translateY(50%);
+	transform: translateY(50%);
+}
+
+.legend-inner .labels .label:before {
+	content: '\2013   ';
+}
+
+#legendpm .gradient {
 	background: -webkit-linear-gradient(bottom, #00796b 0%, #00796b 16%, #f9a825 32%, #e65100 48%, #dd2c00 72%, #dd2c00 80%, #8c0084 100%);
 	background: linear-gradient(to top, #00796b 0%, #00796b 16%, #f9a825 32%, #e65100 48%, #dd2c00 72%, #dd2c00 80%, #8c0084 100%);
-	position: relative;
 }
 
-#legend-inner-pm .labels {
-	width: 10em;
-	position: relative;
-}
-
-#legend-inner-pm .labels .label {
-	position: absolute;
-	-webkit-transform: translateY(50%);
-	transform: translateY(50%);
-}
-
-#legend-inner-pm .labels .label:before {
-	content: '\2013   ';
-}
-
-
-#legend-inner-pm2 {
-	position: absolute;
-	left: 30px;
-	bottom: 20px;
-	pointer-events: none;
-	height: 80%;
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-}
-
-#legend-inner-pm2 .gradient {
-	opacity: 0.8;
-	width: 20px;
+#legendpm2 .gradient {
 	background: -webkit-linear-gradient(bottom, #00796b 0%, #00796b 8%, #f9a825 16%, #e65100 32%, #dd2c00 48%, #dd2c00 72%, #8c0084 80%);
 	background: linear-gradient(to top, #00796b 0%, #00796b 8%, #f9a825 16%, #e65100 32%, #dd2c00 48%, #dd2c00 72%, #8c0084 80%);
-	position: relative;
 }
 
-#legend-inner-pm2 .labels {
-	width: 10em;
-	position: relative;
-}
-
-#legend-inner-pm2 .labels .label {
-	position: absolute;
-	-webkit-transform: translateY(50%);
-	transform: translateY(50%);
-}
-
-#legend-inner-pm2 .labels .label:before {
-	content: '\2013   ';
-}
-
-
-#legend-inner-temp {
-	position: absolute;
-	left: 30px;
-	bottom: 20px;
-	pointer-events: none;
-	height: 80%;
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-}
-
-#legend-inner-temp .gradient {
-	opacity: 0.8;
-	width: 20px;
+#legendtemp .gradient {
 	background: -webkit-linear-gradient(bottom, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
 	background: linear-gradient(to top, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
-	position: relative;
 }
 
-#legend-inner-temp .labels {
-	width: 10em;
-	position: relative;
-}
-
-#legend-inner-temp .labels .label {
-	position: absolute;
-	-webkit-transform: translateY(50%);
-	transform: translateY(50%);
-}
-
-#legend-inner-temp .labels .label:before {
-	content: '\2013   ';
-}
-
-
-#legend-inner-humi {
-	position: absolute;
-	left: 30px;
-	bottom: 20px;
-	pointer-events: none;
-	height: 80%;
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-}
-
-#legend-inner-humi .gradient {
-	opacity: 0.8;
-	width: 20px;
+#legendhumi .gradient {
 	background: -webkit-linear-gradient(bottom, #FFFFFF 0%, #0000FF 100%);
 	background: linear-gradient(to top, #FFFFFF 0%, #0000FF 100%);
-	position: relative;
 }
 
-#legend-inner-humi .labels {
-	width: 10em;
-	position: relative;
-}
-
-#legend-inner-humi .labels .label {
-	position: absolute;
-	-webkit-transform: translateY(50%);
-	transform: translateY(50%);
-}
-
-#legend-inner-humi .labels .label:before {
-	content: '\2013   ';
-}
-
-
-#legend-inner-druck {
-	position: absolute;
-	left: 30px;
-	bottom: 20px;
-	pointer-events: none;
-	height: 80%;
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-}
-
-#legend-inner-druck .gradient {
-	opacity: 0.8;
-	width: 20px;
+#legenddruck .gradient {
 	background: -webkit-linear-gradient(bottom, #dd2e97 0%,#6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
 	background: linear-gradient(to top, #dd2e97 0%,#6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
-	position: relative;
 }
-
-#legend-inner-druck .labels {
-	width: 10em;
-	position: relative;
-}
-
-#legend-inner-druck .labels .label {
-	position: absolute;
-	-webkit-transform: translateY(50%);
-	transform: translateY(50%);
-}
-
-#legend-inner-druck .labels .label:before {
-	content: '\2013   ';
-}
-
 
 #legendaqius span {
 	display: inline-block;
@@ -375,7 +261,7 @@ li {
 	display:block;
 	position:fixed;
 	overflow:hidden;
-	background-color: #3498DB;
+	background-color: rgba(56, 181, 173, 1);
 	z-index:1000;
 }
 
@@ -438,10 +324,10 @@ tr {
 }
 
 #table {
-	position: absolute;
+/*	position: absolute; */
 	text-align: center;
 	padding: 8px;
-	margin-top: -20px;
+	margin-top: 5px;
 	font-weight:bold;
 	font-family: arial, sans-serif;
 	color:black;
@@ -450,10 +336,7 @@ tr {
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
 	background-color: rgb(250,250,250,0.5);
 	border-radius:2px;
-	z-index: 1000;
 	max-height: 90vh;
-	top:10vh;
-	overflow-y: auto;
 }
 
 .hexbin-hexagon {
@@ -462,7 +345,7 @@ tr {
 
 
 #menu{
-	background-color: #3498DB;
+	background-color: rgba(56, 181, 173, 1);
 	color: white;
 	font-size: 32px;
 	border: none;
@@ -471,10 +354,11 @@ tr {
 	right:0px;
 	position: absolute;
 	z-index: 1000;
+	padding: 10px;
 }
 
 #menu:hover, #menu:focus{
-	background-color: #2980B9;
+	background-color: rgba(56, 181, 173, 1);
 }
 
 #sidebar{
@@ -483,7 +367,7 @@ tr {
 	right:0px;
 	height: 100vh;
 	width: 400px;
-	max-width:400px;
+	max-width:100%;
 	display:none;
 	z-index: 999;
 	background-color: rgb(250,250,250,0.5);
