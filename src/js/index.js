@@ -19,8 +19,8 @@ import * as d3Transistion from "d3-transition";
 const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Queue,d3Request,d3Time,d3Hexbin,d3Transistion);
 
 import '../css/style.css';
-import './places.js';
-import './zooms.js';
+import * as places from './places.js';
+import * as zooms from './zooms.js';
 
 
 //MAP
