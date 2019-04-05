@@ -1,4 +1,4 @@
-var zooms = {"europe": 4,
+module.exports = {"europe": 4,
 "deutschland": 6,
 "germany": 6,
 "baden-wuerttemberg": 8,
