@@ -18,9 +18,9 @@ import * as d3Transistion from "d3-transition";
 
 const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Queue,d3Request,d3Time,d3Hexbin,d3Transistion);
 
-import './../css/style.css';
-import './../js/places.js';
-import './../js/zooms.js';
+import '../css/style.css';
+import * as places from './places.js';
+import * as zooms from './zooms.js';
 
 
 //MAP
@@ -37,9 +37,6 @@ var tiles;
 
 var selector1 = "P1";
 var P1orP2 = "";
-
-var places;
-var zooms;
 
 var oriAQI;
 
