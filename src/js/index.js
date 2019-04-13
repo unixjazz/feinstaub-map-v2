@@ -806,7 +806,6 @@ function formula(Ih,Il,Ch,Cl,C){
 
 };
 
-
 function displayGraph(sens,option) {
     
     
@@ -821,10 +820,27 @@ function displayGraph(sens,option) {
 
 		var iddiv = "#graph_"+sens;
 
-		var td = d3.select(iddiv).append("td")
-			.attr("id", "frame_"+sens)
-			.attr("colspan", "2")
-			.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+		if (selector1 == "P1" || selector1 == "P2") {
+			var td = d3.select(iddiv).append("td")
+				.attr("id", "frame_"+sens)
+				.attr("colspan", "2")
+				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+		} else if (selector1 == "temp") {
+			var td = d3.select(iddiv).append("td")
+				.attr("id", "frame_"+sens)
+				.attr("colspan", "2")
+				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=4&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=3&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+		} else if (selector1 == "humi") {
+			var td = d3.select(iddiv).append("td")
+				.attr("id", "frame_"+sens)
+				.attr("colspan", "2")
+				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=6&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=5&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+		} else if (selector1 == "druck") {
+			var td = d3.select(iddiv).append("td")
+				.attr("id", "frame_"+sens)
+				.attr("colspan", "2")
+				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=8&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=7&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+		}
 
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(-) #"+sens;
 
@@ -840,7 +856,7 @@ function displayGraph(sens,option) {
         var idtd = "#frame_"+sens;
         
         var td = d3.select(idtd)
-                .html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=1&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=2&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+                .html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=3&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=4&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
         
 
 	};
