@@ -30,7 +30,7 @@ var hmhexaPM_aktuell;
 var hmhexaPM_24Stunden;
 var hmhexatemp;
 var hmhexahumi;
-var hmhexadruck;
+var hmhexapressure;
 
 var map;
 var tiles;
@@ -40,8 +40,9 @@ var P1orP2 = "";
 
 var oriAQI;
 
-var openedGraph1 = [];
+var openedTab = false;
 
+var openedGraph1 = [];
 
 var locale = d3.timeFormatLocale({
 	"dateTime": "%Y.%m.%d %H:%M:%S",
@@ -141,7 +142,7 @@ if (location.hash) {
 };
 
 window.onload=function(){
-
+	
 	map.setView(cooCenter, zoomLevel);
 
 	hexagonheatmap = L.hexbinLayer(options1).addTo(map);
@@ -150,7 +151,7 @@ window.onload=function(){
 
 	var all = document.getElementsByTagName("*");
         
-	console.log(all);
+//	console.log(all);
 
 	d3.queue()
 		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
@@ -233,8 +234,7 @@ function ready(error,data) {
 
 //	console.log(hmhexahumi);
 
-	hmhexadruck = data[2].reduce(function(filtered, item) {
-//		if (item.sensordatavalues.length == 3) {
+	hmhexapressure = data[2].reduce(function(filtered, item) {
 		if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "BMP180" || item.sensor.sensor_type.name == "BMP280" ) {
 			var value_temp = parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100;
 			if ((value_temp > 850) && (value_temp < 1200)) {
@@ -244,7 +244,7 @@ function ready(error,data) {
 		return filtered;
 	}, []);
 
-//	console.log(hmhexadruck);
+//	console.log(hmhexapressure);
 
 	var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 	var timestamp = dateParser(data[0][0].timestamp);
@@ -275,7 +275,7 @@ function ready(error,data) {
 	if(selector1 == "officialus"){makeHexagonmap(hmhexaPM_24Stunden,options3);};
 	if(selector1 == "temp"){makeHexagonmap(hmhexatemp,options4);};
 	if(selector1 == "humi"){makeHexagonmap(hmhexahumi,options5);};
-	if(selector1 == "druck"){makeHexagonmap(hmhexadruck,options6);};
+	if(selector1 == "pressure"){makeHexagonmap(hmhexapressure,options6);};
 
 };
 
@@ -288,17 +288,19 @@ function makeHexagonmap(data,option){
 
 function reload(val){
     d3.selectAll('path.hexbin-hexagon').remove();
+	d3.select("#results").remove();
+	document.getElementById('sidebar').style.display='none';
 
 	console.log(val);
-	
-	selector1 = val;
 
+	selector1 = val;
+	
 	document.getElementById('legendaqius').style.display='none';
 	document.getElementById('legendpm').style.display='none';
 	document.getElementById('legendpm2').style.display='none';
 	document.getElementById('legendtemp').style.display='none';
 	document.getElementById('legendhumi').style.display='none';
-	document.getElementById('legenddruck').style.display='none';
+	document.getElementById('legendpressure').style.display='none';
 
 	switch (val) {
 		case "P1":
@@ -326,10 +328,10 @@ function reload(val){
 					hexagonheatmap.data(hmhexahumi); 
 					document.getElementById('legendhumi').style.display='block';
 					break;
-		case "druck":
+		case "pressure":
 					hexagonheatmap.initialize(options6);
-					hexagonheatmap.data(hmhexadruck); 
-					document.getElementById('legenddruck').style.display='block';
+					hexagonheatmap.data(hmhexapressure); 
+					document.getElementById('legendpressure').style.display='block';
 					break;
 	}
 
@@ -453,7 +455,7 @@ L.HexbinLayer = L.Layer.extend({
 			if (selector1 == "officialus"){return d3.median(d, (o) => officialaqius(o.o.data))}
 			if (selector1 == "temp"){return d3.median(d, (o) => o.o.data.Temp)} 
 			if (selector1 == "humi"){return d3.median(d, (o) => o.o.data.Humi)} 
-			if (selector1 == "druck"){return d3.median(d, (o) => o.o.data.Press)} 
+			if (selector1 == "pressure"){return d3.median(d, (o) => o.o.data.Press)} 
 		}
 	},
 
@@ -667,6 +669,10 @@ function sensorNr(data){
 
 	openedGraph1 = [];
 
+	if(openedTab = true && !d3.select("#results").empty()){
+		d3.select("#results").remove();
+		openedTab = false;
+	};
 
 	var x = document.getElementById("sidebar");
 	if (x.style.display = "none") {
@@ -691,8 +697,8 @@ function sensorNr(data){
 		if (selector1 == "humi"){
 			textefin += "<th class = 'titre'>Feuchtigkeit %</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='humisens'>"+parseInt(data[0].o.data.Humi)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
-		if (selector1 == "druck"){
-			textefin += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='drucksens'>"+parseInt(data[0].o.data.Press)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+		if (selector1 == "pressure"){
+			textefin += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">(+) #"+data[0].o.id+"</td><td id='pressuresens'>"+parseInt(data[0].o.data.Press)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
 		};
 	};
 
@@ -736,11 +742,11 @@ function sensorNr(data){
 			});
 
 		};
-		if (selector1 == "druck"){
-			texte += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='drucksens'>"+(d3.median(data, (o) => o.o.data.Press)).toFixed(1)+"</td></tr>";
+		if (selector1 == "pressure"){
+			texte += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='pressuresens'>"+(d3.median(data, (o) => o.o.data.Press)).toFixed(1)+"</td></tr>";
 
 			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='drucksens'>"+i.o.data.Press.toFixed(1)+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
+				sensors += "<tr><td class='idsens' value="+i.o.id+">(+) #"+i.o.id+"</td><td id='pressuresens'>"+i.o.data.Press.toFixed(1)+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
 			});
 		};
 		var textefin = texte + sensors + "</table>";
@@ -829,7 +835,7 @@ function displayGraph(sens) {
 				.attr("id", "frame_"+sens)
 				.attr("colspan", "2")
 				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=6&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=5&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-		} else if (selector1 == "druck") {
+		} else if (selector1 == "pressure") {
 			var td = d3.select(iddiv).append("td")
 				.attr("id", "frame_"+sens)
 				.attr("colspan", "2")
@@ -877,33 +883,35 @@ function removeInArray(array) {
 
 var x, i, j, selElmnt, a, b, c;
 /*look for any elements with the class "custom-select":*/
+console.log(selector1);
 x = document.getElementsByClassName("custom-select");
 for (i = 0; i < x.length; i++) {
-  selElmnt = x[i].getElementsByTagName("select")[0];
-  /*for each element, create a new DIV that will act as the selected item:*/
-  a = document.createElement("DIV");
-  a.setAttribute("class", "select-selected");
-  a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
-  x[i].appendChild(a);
-  /*for each element, create a new DIV that will contain the option list:*/
-  b = document.createElement("DIV");
-  b.setAttribute("class", "select-items select-hide");
+	selElmnt = x[i].getElementsByTagName("select")[0];
+	selector1 = selElmnt.value;
+	/*for each element, create a new DIV that will act as the selected item:*/
+	a = document.createElement("DIV");
+	a.setAttribute("class", "select-selected");
+	a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+	x[i].appendChild(a);
+	/*for each element, create a new DIV that will contain the option list:*/
+	b = document.createElement("DIV");
+	b.setAttribute("class", "select-items select-hide");
   
-    for (j = 0; j < selElmnt.length; j++) {
-     if (selElmnt.options[j].value != selector1){
+	for (j = 0; j < selElmnt.length; j++) {
+		if (selElmnt.options[j].value != selector1){
       
-    /*for each option in the original select element,
-    create a new DIV that will act as an option item:*/
-    c = document.createElement("DIV");
-    c.innerHTML = selElmnt.options[j].innerHTML;         
-    c.addEventListener("click", function(e) {
-        /*when an item is clicked, update the original select box,
-        and the selected item:*/
-        var y, i, k, s, h;
-        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-        h = this.parentNode.previousSibling;
-        for (i = 0; i < s.length; i++) {
-          if (s.options[i].innerHTML == this.innerHTML) {
+			/*for each option in the original select element,
+			create a new DIV that will act as an option item:*/
+			c = document.createElement("DIV");
+			c.innerHTML = selElmnt.options[j].innerHTML;         
+			c.addEventListener("click", function(e) {
+				/*when an item is clicked, update the original select box,
+				and the selected item:*/
+				var y, i, k, s, h;
+				s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+				h = this.parentNode.previousSibling;
+				for (i = 0; i < s.length; i++) {
+					if (s.options[i].innerHTML == this.innerHTML) {
               
             reload(s.options[i].value);
             s.selectedIndex = i;
@@ -926,17 +934,16 @@ for (i = 0; i < x.length; i++) {
   }
   }
     
-  x[i].appendChild(b);
-  a.addEventListener("click", function(e) {
-      /*when the select box is clicked, close any other select boxes,
-      and open/close the current select box:*/
-      e.stopPropagation();
-      closeAllSelect(this);
-      this.nextSibling.classList.toggle("select-hide");
-      this.classList.toggle("select-arrow-active");
+	x[i].appendChild(b);
+	a.addEventListener("click", function(e) {
+		/*when the select box is clicked, close any other select boxes,
+		and open/close the current select box:*/
+		e.stopPropagation();
+		closeAllSelect(this);
+		this.nextSibling.classList.toggle("select-hide");
+		this.classList.toggle("select-arrow-active");
     });
 }
-
 
 
 function closeAllSelect(elmnt) {
@@ -1004,4 +1011,3 @@ while (element.firstChild) {
 /*if the user clicks anywhere outside the select box,
 then close all select boxes:*/
 document.addEventListener("click", closeAllSelect);
-
