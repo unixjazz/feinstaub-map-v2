@@ -247,6 +247,7 @@ li {
 .tooltip {
 	text-decoration:none;
 	position:relative;
+    cursor:pointer;
 }
 
 .tooltip div {
