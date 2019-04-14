@@ -42,10 +42,7 @@ var oriAQI;
 
 var openedTab = false;
 
-
 var openedGraph1 = [];
-var openedGraph2 = [];
-
 
 var locale = d3.timeFormatLocale({
 	"dateTime": "%Y.%m.%d %H:%M:%S",
@@ -338,11 +335,13 @@ function reload(val){
 					break;
 	}
 
-	if (openedGraph1.length >0){
-		openedGraph1.forEach(function(item){
-			displayGraph(item,1);
-		});
 
+	if (document.getElementById("sidebar").style.display === "block") {
+		document.getElementById("sidebar").style.display = "none";
+		if(!d3.select("#results").empty()){
+			d3.select("#results").remove();
+//			openenedTab = false;
+		};
 	};
 
 };
@@ -402,9 +401,8 @@ menu.addEventListener("click", function(e) {
 
 	if (x.style.display === "block") {
 		x.style.display = "none";
-		if(openedTab = true && !d3.select("#results").empty()){
+		if(!d3.select("#results").empty()){
 			d3.select("#results").remove();
-			openedTab = false;
 		};
 	} else {
 		x.style.display = "block";
@@ -670,7 +668,6 @@ L.hexbinLayer = function(options) {
 function sensorNr(data){
 
 	openedGraph1 = [];
-    openedGraph2 = [];
 
 	if(openedTab = true && !d3.select("#results").empty()){
 		d3.select("#results").remove();
@@ -765,7 +762,7 @@ function sensorNr(data){
         
     d3.selectAll(".idsens").on("click", function() {
             
-        displayGraph(d3.select(this).attr("value"),0);
+        displayGraph(d3.select(this).attr("value"));
     
     });
     
@@ -811,17 +808,15 @@ function formula(Ih,Il,Ch,Cl,C){
 
 };
 
-function displayGraph(sens,option) {
+function displayGraph(sens) {
     
     
-    if (option == 0 ){
 
 	if (!openedGraph1.includes(sens)){
 
 		openedGraph1.push(sens);
 
 //		console.log(openedGraph1);
-//        console.log(openedGraph2);
 
 		var iddiv = "#graph_"+sens;
 
@@ -853,17 +848,6 @@ function displayGraph(sens,option) {
 
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
 		removeTd(sens);
-
-	};};
-    
-    if (option == 1 ){
-        
-        var idtd = "#frame_"+sens;
-        
-        var td = d3.select(idtd)
-                .html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=3&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=4&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-        
-
 	};
 
 };
@@ -929,26 +913,26 @@ for (i = 0; i < x.length; i++) {
 				for (i = 0; i < s.length; i++) {
 					if (s.options[i].innerHTML == this.innerHTML) {
               
-						reload(s.options[i].value);
-						s.selectedIndex = i;
-						h.innerHTML = this.innerHTML;
-            
-//						console.log(h.value);
-//						console.log(this.innerHTML);
-              
-						y = this.parentNode.getElementsByClassName("same-as-selected");
-						for (k = 0; k < y.length; k++) {
-							y[k].removeAttribute("class");
-						}
-						this.setAttribute("class", "same-as-selected");            
-						break;
-					}
-				}
-				h.click();
-			});
-			b.appendChild(c);  
-		}
-	}
+            reload(s.options[i].value);
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+//            
+//             console.log(h.value);
+//              console.log(this.innerHTML);
+//              
+//            y = this.parentNode.getElementsByClassName("same-as-selected");
+//            for (k = 0; k < y.length; k++) {
+//              y[k].removeAttribute("class");
+//            }
+//            this.setAttribute("class", "same-as-selected");            
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);  
+  }
+  }
     
 	x[i].appendChild(b);
 	a.addEventListener("click", function(e) {
@@ -963,63 +947,66 @@ for (i = 0; i < x.length; i++) {
 
 
 function closeAllSelect(elmnt) {
-	/*a function that will close all select boxes in the document,
-	except the current select box:*/
-	var x, y,z, i, arrNo = [],selElmnt;
-	x = document.getElementsByClassName("select-items");
-	y = document.getElementsByClassName("select-selected");
-	z = document.getElementsByClassName("same-as-selected"); 
-	selElmnt = document.getElementsByTagName("select")[0];
-	for (i = 0; i < y.length; i++) {
-		if (elmnt == y[i]) {
-			arrNo.push(i);
-
-			var element = x[0];
-			while (element.firstChild) {
-				element.removeChild(element.firstChild);
-			};
-
-			for (j = 0; j < selElmnt.length; j++) {
-
-				if (selElmnt.options[j].value != selector1){
-
-					/*for each option in the original select element,
-					create a new DIV that will act as an option item:*/
-					c = document.createElement("DIV");
-					c.innerHTML = selElmnt.options[j].innerHTML;
-					c.addEventListener("click", function(e) {
-						/*when an item is clicked, update the original select box,
-						and the selected item:*/
-						var y, i, k, s, h;
-						s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-						h = this.parentNode.previousSibling;
-						for (i = 0; i < s.length; i++) {
-							if (s.options[i].innerHTML == this.innerHTML) {
-								reload(s.options[i].value);
-								s.selectedIndex = i;
-								h.innerHTML = this.innerHTML;
-								y = this.parentNode.getElementsByClassName("same-as-selected");
-								for (k = 0; k < y.length; k++) {
-									y[k].removeAttribute("class");
-								}
-								this.setAttribute("class", "same-as-selected");            
-								break;
-							}
-						}
-						h.click();
-					});
-					b.appendChild(c);     
-				}
-			}
-		} else {
-			y[i].classList.remove("select-arrow-active");
-		}
-	}
-	for (i = 0; i < x.length; i++) {
-		if (arrNo.indexOf(i)) {
-			x[i].classList.add("select-hide");
-		}
-	}
+  /*a function that will close all select boxes in the document,
+  except the current select box:*/
+  var x, y,z, i, arrNo = [],selElmnt;
+  x = document.getElementsByClassName("select-items");
+  y = document.getElementsByClassName("select-selected");
+  z = document.getElementsByClassName("same-as-selected"); 
+  selElmnt = document.getElementsByTagName("select")[0];
+  for (i = 0; i < y.length; i++) {
+    if (elmnt == y[i]) {
+      arrNo.push(i)
+        
+        
+var element = x[0];
+while (element.firstChild) {
+  element.removeChild(element.firstChild);
+    };
+               
+ for (j = 0; j < selElmnt.length; j++) {
+     
+     if (selElmnt.options[j].value != selector1){
+      
+      
+    /*for each option in the original select element,
+    create a new DIV that will act as an option item:*/
+    c = document.createElement("DIV");
+    c.innerHTML = selElmnt.options[j].innerHTML;
+    c.addEventListener("click", function(e) {
+        /*when an item is clicked, update the original select box,
+        and the selected item:*/
+        var y, i, k, s, h;
+        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+        h = this.parentNode.previousSibling;
+        for (i = 0; i < s.length; i++) {
+          if (s.options[i].innerHTML == this.innerHTML) {
+              
+            reload(s.options[i].value);
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+//            y = this.parentNode.getElementsByClassName("same-as-selected");
+//            for (k = 0; k < y.length; k++) {
+//              y[k].removeAttribute("class");
+//            }
+//            this.setAttribute("class", "same-as-selected");            
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);     
+  }
+  } 
+    } else {
+      y[i].classList.remove("select-arrow-active");
+    }
+  }
+  for (i = 0; i < x.length; i++) {
+    if (arrNo.indexOf(i)) {
+      x[i].classList.add("select-hide");
+    }
+  }    
 }
 /*if the user clicks anywhere outside the select box,
 then close all select boxes:*/
