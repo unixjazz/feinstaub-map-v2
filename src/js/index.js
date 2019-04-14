@@ -40,11 +40,7 @@ var P1orP2 = "";
 
 var oriAQI;
 
-var openenedTab = false;
-
-
 var openedGraph1 = [];
-var openedGraph2 = [];
 
 
 var locale = d3.timeFormatLocale({
@@ -337,11 +333,13 @@ function reload(val){
 					break;
 	}
 
-	if (openedGraph1.length >0){
-		openedGraph1.forEach(function(item){
-			displayGraph(item,1);
-		});
 
+	if (document.getElementById("sidebar").style.display === "block") {
+		document.getElementById("sidebar").style.display = "none";
+		if(!d3.select("#results").empty()){
+			d3.select("#results").remove();
+//			openenedTab = false;
+		};
 	};
 
 };
@@ -401,9 +399,8 @@ menu.addEventListener("click", function(e) {
 
 	if (x.style.display === "block") {
 		x.style.display = "none";
-		if(openenedTab = true && !d3.select("#results").empty()){
+		if(!d3.select("#results").empty()){
 			d3.select("#results").remove();
-			openenedTab = false;
 		};
 	} else {
 		x.style.display = "block";
@@ -669,7 +666,6 @@ L.hexbinLayer = function(options) {
 function sensorNr(data){
 
 	openedGraph1 = [];
-    openedGraph2 = [];
 
 
 	var x = document.getElementById("sidebar");
@@ -760,7 +756,7 @@ function sensorNr(data){
         
     d3.selectAll(".idsens").on("click", function() {
             
-        displayGraph(d3.select(this).attr("value"),0);
+        displayGraph(d3.select(this).attr("value"));
     
     });
     
@@ -806,17 +802,15 @@ function formula(Ih,Il,Ch,Cl,C){
 
 };
 
-function displayGraph(sens,option) {
+function displayGraph(sens) {
     
     
-    if (option == 0 ){
 
 	if (!openedGraph1.includes(sens)){
 
 		openedGraph1.push(sens);
 
 //		console.log(openedGraph1);
-//        console.log(openedGraph2);
 
 		var iddiv = "#graph_"+sens;
 
@@ -848,17 +842,6 @@ function displayGraph(sens,option) {
 
 		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML ="(+) #"+sens;
 		removeTd(sens);
-
-	};};
-    
-    if (option == 1 ){
-        
-        var idtd = "#frame_"+sens;
-        
-        var td = d3.select(idtd)
-                .html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=3&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=4&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
-        
-
 	};
 
 };
@@ -925,15 +908,15 @@ for (i = 0; i < x.length; i++) {
             reload(s.options[i].value);
             s.selectedIndex = i;
             h.innerHTML = this.innerHTML;
-            
-             console.log(h.value);
-              console.log(this.innerHTML);
-              
-            y = this.parentNode.getElementsByClassName("same-as-selected");
-            for (k = 0; k < y.length; k++) {
-              y[k].removeAttribute("class");
-            }
-            this.setAttribute("class", "same-as-selected");            
+//            
+//             console.log(h.value);
+//              console.log(this.innerHTML);
+//              
+//            y = this.parentNode.getElementsByClassName("same-as-selected");
+//            for (k = 0; k < y.length; k++) {
+//              y[k].removeAttribute("class");
+//            }
+//            this.setAttribute("class", "same-as-selected");            
             break;
           }
         }
@@ -995,11 +978,11 @@ while (element.firstChild) {
             reload(s.options[i].value);
             s.selectedIndex = i;
             h.innerHTML = this.innerHTML;
-            y = this.parentNode.getElementsByClassName("same-as-selected");
-            for (k = 0; k < y.length; k++) {
-              y[k].removeAttribute("class");
-            }
-            this.setAttribute("class", "same-as-selected");            
+//            y = this.parentNode.getElementsByClassName("same-as-selected");
+//            for (k = 0; k < y.length; k++) {
+//              y[k].removeAttribute("class");
+//            }
+//            this.setAttribute("class", "same-as-selected");            
             break;
           }
         }
