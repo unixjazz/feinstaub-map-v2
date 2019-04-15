@@ -180,13 +180,16 @@ window.onload=function(){
 
 //	REVOIR LE DOUBLECLIQUE
 
-	map.on('click', function(e) {
-		map.setView([e.latlng.lat, e.latlng.lng], map.getZoom()); 
-	});
+//	map.on('click', function(e) {
+//		map.setView([e.latlng.lat, e.latlng.lng], map.getZoom()); 
+//	});
 
 };
 
-map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
+map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:true});
+
+
+//map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
 
 new L.Hash(map);
 
