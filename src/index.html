@@ -14,7 +14,7 @@
 
 	<div id="UI_container">
 		<div id ='legendcontainer'>
-			<div class ="legend" id="legendpm" style="display: block;">
+			<div class ="legend" id="legend_PM10" style="display: block;">
 				<div class="legend-inner">
 					<div class="gradient">
 					</div>
@@ -29,7 +29,7 @@
 				</div>
 			</div>
 
-			<div class ="legend" id="legendpm2" style="display: none;">
+			<div class ="legend" id="legend_PM25" style="display: none;">
 				<div class="legend-inner">
 					<div class="gradient">
 					</div>
@@ -44,7 +44,7 @@
 				</div>
 			</div> 
 
-			<div class ="legend" id="legendaqius" style="display: none;">
+			<div class ="legend" id="legend_Official_AQI_US" style="display: none;">
 <!--				<h3>Air quality US</h3>-->
 				<ul>
 					<li class="tooltip" onclick="window.open('https://www.airnow.gov/index.cfm?action=aqibasics.aqi','_blank')"><span style="background-color:#00E400"></span> Good<div class="tooltip-div">Air quality is considered satisfactory, and air pollution poses little or no risk.</div></li>
@@ -56,7 +56,7 @@
 				</ul>
 			</div>
 
-			<div class ="legend" id="legendtemp" style="display: none;">
+			<div class ="legend" id="legend_Temperature" style="display: none;">
 				<div class="legend-inner">
 					<div class="gradient">
 						<div class="limit">
@@ -71,7 +71,7 @@
 				</div>
 			</div>
 
-			<div class ="legend" id="legendhumi" style="display: none;">
+			<div class ="legend" id="legend_Humidity" style="display: none;">
 				<div class="legend-inner">
 					<div class="gradient">
 						<div class="limit">
@@ -88,7 +88,7 @@
 				</div>
 			</div> 
 
-			<div class ="legend" id="legendpressure" style="display: none;">
+			<div class ="legend" id="legend_Pressure" style="display: none;">
 				<div class="legend-inner">
 					<div class="gradient">
 						<div class="limit">
@@ -106,12 +106,12 @@
 		</div>
 		<div class="custom-select">
 			<select>
-				<option value="P1"> PM10</option>
-				<option value="P2"> PM2.5</option>
-				<option value="officialus"> Official AQI US</option>
-				<option value="temp"> Temperature</option>
-				<option value="humi"> Feuchtigkeit</option>
-				<option value="pressure"> Druck</option>
+				<option value="PM10"> PM10</option>
+				<option value="PM25"> PM2.5</option>
+				<option value="Official_AQI_US"> Official AQI US</option>
+				<option value="Temperature"> Temperature</option>
+				<option value="Humidity"> Feuchtigkeit</option>
+				<option value="Pressure"> Druck</option>
 			</select>
 		</div>
 	</div>

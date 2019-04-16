@@ -8,6 +8,7 @@ module.exports = {
     index: './src/js/index.js'
   },
   devServer: {
+    host: '127.0.0.1',
     port: 8080
   },
     module:{
