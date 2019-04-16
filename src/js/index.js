@@ -10,13 +10,13 @@ import * as d3TimeFormat from'd3-time-format';
 import * as d3Scale from'd3-scale';
 import * as d3Array from'd3-array';
 import * as d3Geo from'd3-geo';
-import * as d3Queue from'd3-queue';
+//import * as d3Queue from'd3-queue';
 import * as d3Request from'd3-request';
 import * as d3Time from'd3-time';
 import * as d3Hexbin from "d3-hexbin";
 import * as d3Transistion from "d3-transition";
 
-const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Queue,d3Request,d3Time,d3Hexbin,d3Transistion);
+const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Request,d3Time,d3Hexbin,d3Transistion);
 
 import '../css/style.css';
 import * as places from './places.js';
@@ -94,6 +94,10 @@ var div = d3.select("#sidebar").append("div")
 
 var tooltipDiv = document.getElementsByClassName('tooltip-div');
 
+function console_log(text) {
+	console.log(text);
+}
+
 window.onmousemove = function (e) {
 	var x = e.clientX,
 	y = e.clientY;
@@ -104,6 +108,9 @@ window.onmousemove = function (e) {
 	};
 };
 
+var cooCenter = [50.495171, 9.730827];
+var zoomLevel = 6;
+
 if (location.hash) {
 	var hash_params = location.hash.split("/");
 	var cooCenter = [hash_params[1],hash_params[2]];
@@ -113,7 +120,7 @@ if (location.hash) {
 	var hostname_parts = hostname.split(".");
 	if (hostname_parts.length == 4) {
 		var place = hostname_parts[0].toLowerCase();
-		console.log(place);
+		console_log(place);
 		if (typeof places[place] !== 'undefined' && places[place] !== null) {
 			var cooCenter = places[place];
 			var zoomLevel = 11;
@@ -121,16 +128,16 @@ if (location.hash) {
 		if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) {
 			var zoomLevel = zooms[place];
 		}
-		console.log("Center: "+cooCenter);
-		console.log("Zoom: "+zoomLevel)
-	} else {
-		var cooCenter = [50.495171, 9.730827];
-		var zoomLevel = 6;
+		console_log("Center: "+cooCenter);
+		console_log("Zoom: "+zoomLevel);
 	}
 };
 
 window.onload=function(){
 	
+	document.getElementById('custom-select').style.display='inline-block';
+	document.getElementById('legend_PM10').style.display='block';
+
 	map.setView(cooCenter, zoomLevel);
 	
 	map.clicked = 0;
@@ -140,28 +147,24 @@ window.onload=function(){
 //	REVOIR ORDRE DANS FONCTION READY
 
 	var all = document.getElementsByTagName("*");
-        
-//	console.log(all);
 
-	d3.queue()
-		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
-		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.24h.json")
-		.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.temp.min.json")
+//	console_log(all);
 
-		.awaitAll(ready);
+	d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json", function(error,data){ready(error,data,1);
+		d3.json("https://maps.luftdaten.info/data/v2/data.24h.json", function(error,data){ready(error,data,2)});
+		d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json", function(error,data){ready(error,data,3)});
+	})
 
 	d3.interval(function(){
 
 		d3.selectAll('path.hexbin-hexagon').remove();
 
-		d3.queue()
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.dust.min.json")
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.24h.json")
-			.defer(d3.json, "https://maps.luftdaten.info/data/v2/data.temp.min.json")
+		d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json", function(error,data){ready(error,data,1);
+			d3.json("https://maps.luftdaten.info/data/v2/data.24h.json", function(error,data){ready(error,data,2)});
+			d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json", function(error,data){ready(error,data,3)});
+		})
 
-			.awaitAll(ready);
-
-		console.log('reload')
+		console_log('reload')
 
 	}, 300000);
 	
@@ -171,9 +174,8 @@ window.onload=function(){
 //	REVOIR LE DOUBLECLIQUE
 
 	map.on('click', function(e) {
-		console.log('Click');
+		console_log('Click');
 		map.clicked = map.clicked + 1;
-		console.log(map.clicked);
 		setTimeout(function() {
 			if(map.clicked == 1){
 				map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
@@ -182,7 +184,7 @@ window.onload=function(){
 		}, 300);
 	});
 	map.on('dblclick', function(e) {
-		console.log('Doubleclick');
+		console_log('Doubleclick');
 		map.clicked = 0;
 		map.zoomIn();
 	});
@@ -197,72 +199,79 @@ tiles = L.tileLayer('https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png',{
 			maxZoom: 18}).addTo(map);
 
 
-function ready(error,data) {
+function ready(error,data,num) {
 
 	if (error) throw error;
 
-	hmhexaPM_aktuell = data[0].reduce(function(filtered, item) {
-		if (item.sensor.sensor_type.name == "SDS011" || item.sensor.sensor_type.name == "PMS1003" || item.sensor.sensor_type.name == "PMS3003" || item.sensor.sensor_type.name == "PMS5003" || item.sensor.sensor_type.name == "PMS6003" || item.sensor.sensor_type.name == "PMS7003" || item.sensor.sensor_type.name == "HPM" || item.sensor.sensor_type.name == "SPS30") {
-			filtered.push({"data":{"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")) , "PM25":parseInt( getRightValue(item.sensordatavalues,"P2"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-		}
-		return filtered;
-	}, []);
-//	console.log(hmhexaPM_aktuell);
-
-	hmhexaPM_AQI = data[1].reduce(function(filtered, item) {
-		if (item.sensor.sensor_type.name == "SDS011" || item.sensor.sensor_type.name == "PMS1003" || item.sensor.sensor_type.name == "PMS3003" || item.sensor.sensor_type.name == "PMS5003" || item.sensor.sensor_type.name == "PMS6003" || item.sensor.sensor_type.name == "PMS7003" || item.sensor.sensor_type.name == "HPM" || item.sensor.sensor_type.name == "SPS30") {
-			var data_in = {"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")), "PM25": parseInt(getRightValue(item.sensordatavalues,"P2"))}
-			var data_out = officialaqius(data_in);
-			if (typeof data_out != 'undefined') {
-				filtered.push({"data":{"AQI": data_out.AQI, "origin": data_out.origin, "PM10": data_in.PM10, "PM25": data_in.PM25}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-			} else {
-				console.log("Failed:");
-				console.log(item);
+	if (num == 1) {
+		hmhexaPM_aktuell = data.reduce(function(filtered, item) {
+			if (item.sensor.sensor_type.name == "SDS011" || item.sensor.sensor_type.name == "PMS1003" || item.sensor.sensor_type.name == "PMS3003" || item.sensor.sensor_type.name == "PMS5003" || item.sensor.sensor_type.name == "PMS6003" || item.sensor.sensor_type.name == "PMS7003" || item.sensor.sensor_type.name == "HPM" || item.sensor.sensor_type.name == "SPS30") {
+				filtered.push({"data":{"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")) , "PM25":parseInt( getRightValue(item.sensordatavalues,"P2"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
 			}
-		}
-		return filtered;
-	}, []);
-//	console.log(hmhexaPM_AQI);
+			return filtered;
+		}, []);
+//		console_log(hmhexaPM_aktuell);
 
-//	REVOIR LES TYPES DE SENSORS
+	} else if (num == 2) {
 
-	hmhexatemp = data[2].reduce(function(filtered, item) {
-		if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
-			filtered.push({"data":{"Temperature":parseInt(getRightValue(item.sensordatavalues,"temperature"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-		}
-		return filtered;
-	}, []);
-
-	hmhexahumi = data[2].reduce(function(filtered, item) {
-		if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
-			filtered.push({"data":{"Humidity":parseInt(getRightValue(item.sensordatavalues,"humidity"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-		}
-		return filtered;
-	}, []);
-
-	hmhexapressure = data[2].reduce(function(filtered, item) {
-		if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "BMP180" || item.sensor.sensor_type.name == "BMP280" ) {
-			var value_temp = parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100;
-			if ((value_temp > 850) && (value_temp < 1200)) {
-				filtered.push({"data":{"Pressure":value_temp}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+		hmhexaPM_AQI = data.reduce(function(filtered, item) {
+			if (item.sensor.sensor_type.name == "SDS011" || item.sensor.sensor_type.name == "PMS1003" || item.sensor.sensor_type.name == "PMS3003" || item.sensor.sensor_type.name == "PMS5003" || item.sensor.sensor_type.name == "PMS6003" || item.sensor.sensor_type.name == "PMS7003" || item.sensor.sensor_type.name == "HPM" || item.sensor.sensor_type.name == "SPS30") {
+				var data_in = {"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")), "PM25": parseInt(getRightValue(item.sensordatavalues,"P2"))}
+				var data_out = officialaqius(data_in);
+				if (typeof data_out != 'undefined') {
+					filtered.push({"data":{"AQI": data_out.AQI, "origin": data_out.origin, "PM10": data_in.PM10, "PM25": data_in.PM25}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+				} else {
+					console_log("Failed:");
+					console_log(item);
+				}
 			}
-		}
-		return filtered;
-	}, []);
+			return filtered;
+		}, []);
+//		console_log(hmhexaPM_AQI);
+
+	} else {
+
+//		REVOIR LES TYPES DE SENSORS
+
+		hmhexatemp = data.reduce(function(filtered, item) {
+			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
+				filtered.push({"data":{"Temperature":parseInt(getRightValue(item.sensordatavalues,"temperature"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+			}
+			return filtered;
+		}, []);
+
+		hmhexahumi = data.reduce(function(filtered, item) {
+			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
+				filtered.push({"data":{"Humidity":parseInt(getRightValue(item.sensordatavalues,"humidity"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+			}
+			return filtered;
+		}, []);
+
+		hmhexapressure = data.reduce(function(filtered, item) {
+			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "BMP180" || item.sensor.sensor_type.name == "BMP280" ) {
+				var value_temp = parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100;
+				if ((value_temp > 850) && (value_temp < 1200)) {
+					filtered.push({"data":{"Pressure":value_temp}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+				}
+			}
+			return filtered;
+		}, []);
+
+	}
 
 	var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
-	var timestamp = dateParser(data[0][0].timestamp);
+	var timestamp = dateParser(data[0].timestamp);
 
-	console.log(timestamp);
+	console_log(timestamp);
 
 	var localTime = new Date();
-	var timeOffset = localTime.getTimezoneOffset(); 
+	var timeOffset = localTime.getTimezoneOffset();
 
-	console.log(timeOffset);
+	console_log(timeOffset);
 
 	var newTime = d3.timeMinute.offset(timestamp, -(timeOffset));
 
-	console.log(newTime);
+	console_log(newTime);
 
 //	var dateFormater = d3.timeFormat("%A %d %B %Y %H:%M:%S");
 
@@ -273,22 +282,24 @@ function ready(error,data) {
 
 //	document.getElementById('update').innerHTML = "Last update: " + data[0][0].timestamp;
 	
-	hexagonheatmap.initialize(scale_options[selector1]);
-	if(selector1 == "PM10") {hexagonheatmap.data(hmhexaPM_aktuell);};
-	if(selector1 == "PM25") {hexagonheatmap.data(hmhexaPM_aktuell);};
-	if(selector1 == "Official_AQI_US"){hexagonheatmap.data(hmhexaPM_AQI);};
-	if(selector1 == "Temperature"){hexagonheatmap.data(hmhexatemp);};
-	if(selector1 == "Humidity"){hexagonheatmap.data(hmhexahumi);};
-	if(selector1 == "Pressure"){hexagonheatmap.data(hmhexapressure);};
+	
+	if(num == 1 && selector1 == "PM10") {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
+	if(num == 1 && selector1 == "PM25") {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
+	if(num == 2 && selector1 == "Official_AQI_US"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_AQI);};
+	if(num == 3 && selector1 == "Temperature"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexatemp);};
+	if(num == 3 && selector1 == "Humidity"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexahumi);};
+	if(num == 3 && selector1 == "Pressure"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexapressure);};
+
+	document.getElementById('loading').style.display='none';
 
 };
 
 function reload(val){
-    d3.selectAll('path.hexbin-hexagon').remove();
+	d3.selectAll('path.hexbin-hexagon').remove();
 	d3.select("#results").remove();
 	document.getElementById('sidebar').style.display='none';
 
-	console.log(val);
+	console_log(val);
 
 	selector1 = val;
 	
@@ -308,19 +319,19 @@ function reload(val){
 					hexagonheatmap.data(hmhexaPM_aktuell);
 					break;
 		case "PM25":
-					hexagonheatmap.data(hmhexaPM_aktuell); 
+					hexagonheatmap.data(hmhexaPM_aktuell);
 					break;
 		case "Official_AQI_US":
-					hexagonheatmap.data(hmhexaPM_AQI); 
+					hexagonheatmap.data(hmhexaPM_AQI);
 					break;
 		case "Temperature":
-					hexagonheatmap.data(hmhexatemp); 
+					hexagonheatmap.data(hmhexatemp);
 					break;
 		case "Humidity":
-					hexagonheatmap.data(hmhexahumi); 
+					hexagonheatmap.data(hmhexahumi);
 					break;
 		case "Pressure":
-					hexagonheatmap.data(hmhexapressure); 
+					hexagonheatmap.data(hmhexapressure);
 					break;
 	}
 
@@ -340,7 +351,6 @@ function getRightValue(array,type){
 	});
 	return value;
 };
-
 
 function color(val){
 	var col= parseInt(val);
@@ -366,7 +376,7 @@ function color(val){
 	if(val>=100 && val < 500){ return "#8c0084";};
 };
 
-function interpolColor(a, b, amount) { 
+function interpolColor(a, b, amount) {
 	var ah = parseInt(a.replace(/#/g, ''), 16),
 			ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
 			bh = parseInt(b.replace(/#/g, ''), 16),
@@ -374,7 +384,7 @@ function interpolColor(a, b, amount) {
 			rr = ar + amount * (br - ar),
 			rg = ag + amount * (bg - ag),
 			rb = ab + amount * (bb - ab);
-//	console.log('#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1));
+//	console_log('#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1));
 	return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
 };
 
@@ -396,12 +406,27 @@ menu.addEventListener("click", function(e) {
 	};
 });
 
+var close_link = document.getElementById("close");
+close_link.addEventListener("click", function(e) {
+
+	var x = document.getElementById("sidebar");
+
+	if (x.style.display === "block") {
+		x.style.display = "none";
+		if(!d3.select("#results").empty()){
+			d3.select("#results").remove();
+		};
+	} else {
+		x.style.display = "block";
+	};
+});
+
 var erkl = document.getElementById("erklaerung");
 erkl.addEventListener("click", function(e) {
 
 	var x = document.getElementById("map-info");
-    
-	console.log(x.style.display);
+
+	console_log(x.style.display);
 	if (x.style.display === "none") {
 		x.style.display = "block";
 		document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
@@ -424,7 +449,7 @@ L.HexbinLayer = L.Layer.extend({
 
 //		REVOIR LE DOUBLECLIQUE
 
-		click: 	function(e) { 
+		click: 	function(e) {
 					setTimeout(function() {
 						if(map.clicked == 1){
 							sensorNr(e)
@@ -444,9 +469,9 @@ L.HexbinLayer = L.Layer.extend({
 			if (selector1 == "PM10"){return parseInt(d3.median(d, (o) => o.o.data.PM10))}
 			if (selector1 == "PM25"){return parseInt(d3.median(d, (o) => o.o.data.PM25))}
 			if (selector1 == "Official_AQI_US"){return d3.median(d, (o) => o.o.data.AQI)}
-			if (selector1 == "Temperature"){return d3.median(d, (o) => o.o.data.Temperature)} 
-			if (selector1 == "Humidity"){return d3.median(d, (o) => o.o.data.Humidity)} 
-			if (selector1 == "Pressure"){return d3.median(d, (o) => o.o.data.Pressure)} 
+			if (selector1 == "Temperature"){return d3.median(d, (o) => o.o.data.Temperature)}
+			if (selector1 == "Humidity"){return d3.median(d, (o) => o.o.data.Humidity)}
+			if (selector1 == "Pressure"){return d3.median(d, (o) => o.o.data.Pressure)}
 		}
 	},
 
@@ -612,7 +637,7 @@ L.HexbinLayer = L.Layer.extend({
 			.y( (d) => d.point.y )
 		let bins = hexbin(data)
 
-//		console.log(bins)
+//		console_log(bins)
 
 		// Join - Join the Hexagons to the data
 		let join = g.selectAll('path.hexbin-hexagon')
@@ -731,7 +756,7 @@ function sensorNr(data){
 			});
 		};
 		if (selector1 == "Humidity"){
-			texte += "<th class = 'titre'>Feuchtigkeit %</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='humisens'>"+parseInt(d3.median(data, (o) => o.o.data.Humidity))+"</td></tr>"; 
+			texte += "<th class = 'titre'>Feuchtigkeit %</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='humisens'>"+parseInt(d3.median(data, (o) => o.o.data.Humidity))+"</td></tr>";
 
 			data.forEach(function(i) {
 				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='humisens'>"+i.o.data.Humidity+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
@@ -754,15 +779,11 @@ function sensorNr(data){
 
 	div.html(textefin)
 		.style("padding","10px")
-    
-        
-    d3.selectAll(".idsens").on("click", function() {
-            
-        displayGraph(d3.select(this).attr("value"));
-    
-    });
-    
-    
+
+	d3.selectAll(".idsens").on("click", function() {
+		displayGraph(d3.select(this).attr("value"));
+	});
+
 };
 
 function aqius(val,type){
@@ -776,7 +797,7 @@ function aqius(val,type){
 		if(parseInt(val) >= 255 && parseInt(val)<= 354){index = formula(200,151,354,255,parseInt(val)) };
 		if(parseInt(val) >= 355 && parseInt(val)<= 424){index = formula(300,201,424,355,parseInt(val))};
 		if(parseInt(val) >= 425 && parseInt(val)<= 504){index = formula(400,301,504,425,parseInt(val))};
-		if(parseInt(val) >= 505 && parseInt(val)<= 604){index = formula(500,401,604,505,parseInt(val))}; 
+		if(parseInt(val) >= 505 && parseInt(val)<= 604){index = formula(500,401,604,505,parseInt(val))};
 
 		if(parseInt(val) > 604){index = 500};
 	};
@@ -805,14 +826,14 @@ function formula(Ih,Il,Ch,Cl,C){
 };
 
 function displayGraph(sens) {
-    
+
 	var inner_pre = "";
 
 	if (!openedGraph1.includes(sens)) {
 
 		openedGraph1.push(sens);
 
-//		console.log(openedGraph1);
+//		console_log(openedGraph1);
 
 		var iddiv = "#graph_"+sens;
 
@@ -857,7 +878,7 @@ function removeInArray(array) {
 		}
 	}
 
-//	console.log(array);
+//	console_log(array);
 
 	return array;
 }
@@ -866,7 +887,7 @@ function removeInArray(array) {
 
 var x, i, j, selElmnt, a, b, c;
 /*look for any elements with the class "custom-select":*/
-console.log(selector1);
+console_log(selector1);
 x = document.getElementsByClassName("custom-select");
 for (i = 0; i < x.length; i++) {
 	selElmnt = x[i].getElementsByTagName("select")[0];
@@ -879,14 +900,14 @@ for (i = 0; i < x.length; i++) {
 	/*for each element, create a new DIV that will contain the option list:*/
 	b = document.createElement("DIV");
 	b.setAttribute("class", "select-items select-hide");
-  
+
 	for (j = 0; j < selElmnt.length; j++) {
 		if (selElmnt.options[j].value != selector1){
-      
+
 			/*for each option in the original select element,
 			create a new DIV that will act as an option item:*/
 			c = document.createElement("DIV");
-			c.innerHTML = selElmnt.options[j].innerHTML;         
+			c.innerHTML = selElmnt.options[j].innerHTML;
 			c.addEventListener("click", function(e) {
 				/*when an item is clicked, update the original select box,
 				and the selected item:*/
@@ -895,28 +916,28 @@ for (i = 0; i < x.length; i++) {
 				h = this.parentNode.previousSibling;
 				for (i = 0; i < s.length; i++) {
 					if (s.options[i].innerHTML == this.innerHTML) {
-              
-            reload(s.options[i].value);
-            s.selectedIndex = i;
-            h.innerHTML = this.innerHTML;
-//            
-//             console.log(h.value);
-//              console.log(this.innerHTML);
-//              
-//            y = this.parentNode.getElementsByClassName("same-as-selected");
-//            for (k = 0; k < y.length; k++) {
-//              y[k].removeAttribute("class");
-//            }
-//            this.setAttribute("class", "same-as-selected");            
-            break;
-          }
-        }
-        h.click();
-    });
-    b.appendChild(c);  
-  }
-  }
-    
+
+						reload(s.options[i].value);
+						s.selectedIndex = i;
+						h.innerHTML = this.innerHTML;
+
+//						console_log(h.value);
+//						console_log(this.innerHTML);
+//
+//						y = this.parentNode.getElementsByClassName("same-as-selected");
+//						for (k = 0; k < y.length; k++) {
+//							y[k].removeAttribute("class");
+//						}
+//						this.setAttribute("class", "same-as-selected");
+						break;
+					}
+				}
+				h.click();
+			});
+			b.appendChild(c);
+		}
+	}
+
 	x[i].appendChild(b);
 	a.addEventListener("click", function(e) {
 		/*when the select box is clicked, close any other select boxes,
@@ -925,70 +946,67 @@ for (i = 0; i < x.length; i++) {
 		closeAllSelect(this);
 		this.nextSibling.classList.toggle("select-hide");
 		this.classList.toggle("select-arrow-active");
-    });
+	});
 }
 
 function closeAllSelect(elmnt) {
-  /*a function that will close all select boxes in the document,
-  except the current select box:*/
-  var x, y,z, i, arrNo = [],selElmnt;
-  x = document.getElementsByClassName("select-items");
-  y = document.getElementsByClassName("select-selected");
-  z = document.getElementsByClassName("same-as-selected"); 
-  selElmnt = document.getElementsByTagName("select")[0];
-  for (i = 0; i < y.length; i++) {
-    if (elmnt == y[i]) {
-      arrNo.push(i)
-        
-        
-var element = x[0];
-while (element.firstChild) {
-  element.removeChild(element.firstChild);
-    };
-               
- for (j = 0; j < selElmnt.length; j++) {
-     
-     if (selElmnt.options[j].value != selector1){
-      
-      
-    /*for each option in the original select element,
-    create a new DIV that will act as an option item:*/
-    c = document.createElement("DIV");
-    c.innerHTML = selElmnt.options[j].innerHTML;
-    c.addEventListener("click", function(e) {
-        /*when an item is clicked, update the original select box,
-        and the selected item:*/
-        var y, i, k, s, h;
-        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-        h = this.parentNode.previousSibling;
-        for (i = 0; i < s.length; i++) {
-          if (s.options[i].innerHTML == this.innerHTML) {
-              
-            reload(s.options[i].value);
-            s.selectedIndex = i;
-            h.innerHTML = this.innerHTML;
-//            y = this.parentNode.getElementsByClassName("same-as-selected");
-//            for (k = 0; k < y.length; k++) {
-//              y[k].removeAttribute("class");
-//            }
-//            this.setAttribute("class", "same-as-selected");            
-            break;
-          }
-        }
-        h.click();
-    });
-    b.appendChild(c);     
-  }
-  } 
-    } else {
-      y[i].classList.remove("select-arrow-active");
-    }
-  }
-  for (i = 0; i < x.length; i++) {
-    if (arrNo.indexOf(i)) {
-      x[i].classList.add("select-hide");
-    }
-  }    
+	/*a function that will close all select boxes in the document,
+	except the current select box:*/
+	var x, y,z, i, arrNo = [],selElmnt;
+	x = document.getElementsByClassName("select-items");
+	y = document.getElementsByClassName("select-selected");
+	z = document.getElementsByClassName("same-as-selected");
+	selElmnt = document.getElementsByTagName("select")[0];
+	for (i = 0; i < y.length; i++) {
+		if (elmnt == y[i]) {
+			arrNo.push(i)
+			var element = x[0];
+			while (element.firstChild) {
+				element.removeChild(element.firstChild);
+			};
+
+			for (j = 0; j < selElmnt.length; j++) {
+
+				if (selElmnt.options[j].value != selector1){
+
+					/*for each option in the original select element,
+					create a new DIV that will act as an option item:*/
+					c = document.createElement("DIV");
+					c.innerHTML = selElmnt.options[j].innerHTML;
+					c.addEventListener("click", function(e) {
+						/*when an item is clicked, update the original select box,
+						and the selected item:*/
+						var y, i, k, s, h;
+						s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+						h = this.parentNode.previousSibling;
+						for (i = 0; i < s.length; i++) {
+							if (s.options[i].innerHTML == this.innerHTML) {
+
+								reload(s.options[i].value);
+								s.selectedIndex = i;
+								h.innerHTML = this.innerHTML;
+//								y = this.parentNode.getElementsByClassName("same-as-selected");
+//								for (k = 0; k < y.length; k++) {
+//									y[k].removeAttribute("class");
+//								}
+//								this.setAttribute("class", "same-as-selected");
+								break;
+							}
+						}
+						h.click();
+					});
+					b.appendChild(c);
+				}
+			}
+		} else {
+			y[i].classList.remove("select-arrow-active");
+		}
+	}
+	for (i = 0; i < x.length; i++) {
+		if (arrNo.indexOf(i)) {
+			x[i].classList.add("select-hide");
+		}
+	}
 }
 /*if the user clicks anywhere outside the select box,
 then close all select boxes:*/
