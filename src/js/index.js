@@ -57,7 +57,7 @@ var scale_options = {
 								valueDomain: [20, 40, 60, 100, 500],
 								colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 							},
-				"PM2.5":	{
+				"PM25":	{
 								valueDomain: [10, 20, 40, 60, 100],
 								colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 							},
