@@ -188,10 +188,7 @@ window.onload=function(){
 	});
 };
 
-map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:true});
-
-
-//map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
+map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
 
 new L.Hash(map);
 
