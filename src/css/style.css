@@ -158,12 +158,12 @@ body {
 	height: 100%;
 }
 
-#legendpm{display: none;}
-#legendpm2{display: none;}
-#legendaqius{display: none; width: 10em; height: auto; padding:10px;}
-#legendtemp{display: none}
-#legendhumi{display: none}
-#legenddruck{display: none}
+#legend_PM10{display: none;}
+#legend_PM25{display: none;}
+#legend_Official_AQI_US{display: none; width: 10em; height: auto; padding:10px;}
+#legend_Temperature{display: none}
+#legend_Humidity{display: none}
+#legend_Pressure{display: none}
 
 .legend-inner {
 	position: absolute;
@@ -197,32 +197,32 @@ body {
 	content: '\2013   ';
 }
 
-#legendpm .gradient {
+#legend_PM10 .gradient {
 	background: -webkit-linear-gradient(bottom, #00796b 0%, #00796b 16%, #f9a825 32%, #e65100 48%, #dd2c00 72%, #dd2c00 80%, #8c0084 100%);
 	background: linear-gradient(to top, #00796b 0%, #00796b 16%, #f9a825 32%, #e65100 48%, #dd2c00 72%, #dd2c00 80%, #8c0084 100%);
 }
 
-#legendpm2 .gradient {
+#legend_PM25 .gradient {
 	background: -webkit-linear-gradient(bottom, #00796b 0%, #00796b 8%, #f9a825 16%, #e65100 32%, #dd2c00 48%, #dd2c00 72%, #8c0084 80%);
 	background: linear-gradient(to top, #00796b 0%, #00796b 8%, #f9a825 16%, #e65100 32%, #dd2c00 48%, #dd2c00 72%, #8c0084 80%);
 }
 
-#legendtemp .gradient {
+#legend_Temperature .gradient {
 	background: -webkit-linear-gradient(bottom, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
 	background: linear-gradient(to top, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
 }
 
-#legendhumi .gradient {
+#legend_Humidity .gradient {
 	background: -webkit-linear-gradient(bottom, #FFFFFF 0%, #0000FF 100%);
 	background: linear-gradient(to top, #FFFFFF 0%, #0000FF 100%);
 }
 
-#legenddruck .gradient {
+#legend_Pressure .gradient {
 	background: -webkit-linear-gradient(bottom, #dd2e97 0%,#6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
 	background: linear-gradient(to top, #dd2e97 0%,#6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
 }
 
-#legendaqius span {
+#legend_Official_AQI_US span {
 	display: inline-block;
 	width: 15px;
 	height: 15px;
@@ -230,7 +230,7 @@ body {
 	top: 3px;
 }
 
-#legendaqius ul {
+#legend_Official_AQI_US ul {
 	padding: 0;
 	margin: 5px 10px;
 	list-style-type: none;
