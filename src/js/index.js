@@ -306,7 +306,7 @@ function ready(error,data,num) {
 //	var dateFormater = locale.format("%A, %d. %B %Y, um %H:%M:%S");
 	var dateFormater = locale.format("%H:%M:%S");
 
-	document.getElementById('update').innerHTML = "Last update: " + dateFormater(newTime);
+	document.getElementById('update').innerHTML = translate.tr(lang,"Last update")+": " + dateFormater(newTime);
 
 //	document.getElementById('update').innerHTML = "Last update: " + data[0][0].timestamp;
 	

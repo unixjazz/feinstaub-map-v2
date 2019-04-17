@@ -41,6 +41,11 @@ module.exports = {
 				"de": "(schließen)",
 	},
 
+// last update
+	"Last update": {
+				"de": "Letztes Update",
+	},
+
 // explanation
 	"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
 <p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
