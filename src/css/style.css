@@ -129,7 +129,7 @@ body {
 	border-left: 1px solid #577;	
 }
 
-#erklaerung{
+#explanation{
 	padding: 10px;
 	font-family: arial, sans-serif;
 	color:black;
@@ -380,8 +380,4 @@ tr {
 	cursor: pointer;
 	pointer-events: all;
 	display: inline-block;
-}
-
-#close a {
-	text-decoration: none;
 }

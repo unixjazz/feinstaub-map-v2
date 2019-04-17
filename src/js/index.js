@@ -21,21 +21,21 @@ const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d
 import '../css/style.css';
 import * as places from './places.js';
 import * as zooms from './zooms.js';
-
+import * as translate from './translate.js';
 
 //MAP
 
 var hexagonheatmap;
 var hmhexaPM_aktuell;
 var hmhexaPM_AQI;
-var hmhexatemp;
-var hmhexahumi;
-var hmhexapressure;
+var hmhexa_t_h_p;
 
 var map;
 var tiles;
 
 var selector1 = "PM10";
+
+var lang = 	lang = translate.getFirstBrowserLanguage().substring(0,2);
 
 var openedGraph1 = [];
 
@@ -78,6 +78,15 @@ var scale_options = {
 								colorRange: ["#dd2e97", "#6b3b8f", "#2979b9", "#02B9ed", "#13ae52", "#c9d841", "#fad635", "#f0a03d", "#892725"]	
 							}
 				};
+
+var titles = {
+				"PM10": "PM10 &micro;g/m&sup3;",
+				"PM25": "PM2.5 &micro;g/m&sup3;",
+				"Official_AQI_US": "AQI US",
+				"Temperature": "Temperature °C",
+				"Humidity": "Humidity %",
+				"Pressure": "Pressure hPa",
+			}
 
 var panelIDs = {
 					"PM10": [2,1],
@@ -134,21 +143,38 @@ if (location.hash) {
 };
 
 window.onload=function(){
-	
+
+	// enable elements
 	document.getElementById('custom-select').style.display='inline-block';
 	document.getElementById('legend_PM10').style.display='block';
+	document.getElementById('close').innerHTML=translate.tr(lang,'(close)');
+	document.getElementById('explanation').innerHTML=translate.tr(lang,'Show explanation');
+	document.getElementById('map-info').innerHTML=translate.tr(lang,"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
+<p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
+<p>By clicking on the plus symbol next to a sensor ID, you can display two graphics: the individual measurements for the last 24 hours and the 24 hours floating mean for the last seven days. For technical reasons, the first of the 8 days displayed on the graphic has to stay empty.\
+The values are refreshed every 5 minutes in order to fit with the measurement frequency of the Airrohr sensors.</p> \
+<p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>");
+	
+
+	var custom_select = document.getElementById('custom-select');
+	var select_options = custom_select.getElementsByTagName('select')[0].getElementsByTagName('option');
+	for (var i=0; i < select_options.length; i++) {
+		select_options[i].innerHTML = translate.tr(lang, select_options[i].innerHTML);
+	}
 
 	map.setView(cooCenter, zoomLevel);
 	
 	map.clicked = 0;
+	
+	selector1 = document.getElementById('custom-select').getElementsByTagName('select')[0].value;
 
-	hexagonheatmap = L.hexbinLayer(scale_options["PM10"]).addTo(map);
+	console_log(selector1);
+
+	hexagonheatmap = L.hexbinLayer(scale_options[selector1]).addTo(map);
+
+	switch_legend(selector1);	
 
 //	REVOIR ORDRE DANS FONCTION READY
-
-	var all = document.getElementsByTagName("*");
-
-//	console_log(all);
 
 	d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json", function(error,data){ready(error,data,1);
 		d3.json("https://maps.luftdaten.info/data/v2/data.24h.json", function(error,data){ready(error,data,2)});
@@ -176,7 +202,7 @@ window.onload=function(){
 	map.on('click', function(e) {
 		console_log('Click');
 		map.clicked = map.clicked + 1;
-		setTimeout(function() {
+		d3.timeout(function() {
 			if(map.clicked == 1){
 				map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
 				map.clicked = 0;
@@ -198,6 +224,28 @@ tiles = L.tileLayer('https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png',{
 			attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
 			maxZoom: 18}).addTo(map);
 
+function switch_legend(val) {
+	var legends = document.getElementById('legendcontainer').querySelectorAll("[id^=legend_]");
+	console_log(legends);
+	for (var i=0; i < legends.length; i++) {
+		legends[i].style.display = 'none';
+	}
+	document.getElementById('legend_'+val).style.display='block';
+}
+
+function isNumber(obj) {
+	return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);
+}
+
+function check_values(obj) {
+	var result = false;
+	if (isNumber(obj)) {
+		if ((selector1 == "Humidity") && (obj >=0 ) && (obj <= 100)) { result = true; }
+		else if ((selector1 == "Temperature") && (obj <= 70 && obj >= -50)) { result = true; }
+		else if ((selector1 == "Pressure") && (obj >= 850) && (obj < 1200)) { result = true; }
+	}
+	return result;
+}
 
 function ready(error,data,num) {
 
@@ -219,7 +267,7 @@ function ready(error,data,num) {
 				var data_in = {"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")), "PM25": parseInt(getRightValue(item.sensordatavalues,"P2"))}
 				var data_out = officialaqius(data_in);
 				if (typeof data_out != 'undefined') {
-					filtered.push({"data":{"AQI": data_out.AQI, "origin": data_out.origin, "PM10": data_in.PM10, "PM25": data_in.PM25}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+					filtered.push({"data":{"Official_AQI_US": data_out.AQI, "origin": data_out.origin, "PM10_24h": data_in.PM10, "PM25_24h": data_in.PM25}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
 				} else {
 					console_log("Failed:");
 					console_log(item);
@@ -233,45 +281,25 @@ function ready(error,data,num) {
 
 //		REVOIR LES TYPES DE SENSORS
 
-		hmhexatemp = data.reduce(function(filtered, item) {
-			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
-				filtered.push({"data":{"Temperature":parseInt(getRightValue(item.sensordatavalues,"temperature"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-			}
+		hmhexa_t_h_p = data.reduce(function(filtered, item) {
+			filtered.push({"data":{"Pressure":parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100, "Humidity":parseInt(getRightValue(item.sensordatavalues,"humidity")), "Temperature":parseInt(getRightValue(item.sensordatavalues,"temperature"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
 			return filtered;
 		}, []);
-
-		hmhexahumi = data.reduce(function(filtered, item) {
-			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "DHT22") {
-				filtered.push({"data":{"Humidity":parseInt(getRightValue(item.sensordatavalues,"humidity"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-			}
-			return filtered;
-		}, []);
-
-		hmhexapressure = data.reduce(function(filtered, item) {
-			if (item.sensor.sensor_type.name == "BME280" || item.sensor.sensor_type.name == "BMP180" || item.sensor.sensor_type.name == "BMP280" ) {
-				var value_temp = parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100;
-				if ((value_temp > 850) && (value_temp < 1200)) {
-					filtered.push({"data":{"Pressure":value_temp}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
-				}
-			}
-			return filtered;
-		}, []);
-
 	}
 
 	var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 	var timestamp = dateParser(data[0].timestamp);
 
-	console_log(timestamp);
+//	console_log(timestamp);
 
 	var localTime = new Date();
 	var timeOffset = localTime.getTimezoneOffset();
 
-	console_log(timeOffset);
+//	console_log(timeOffset);
 
 	var newTime = d3.timeMinute.offset(timestamp, -(timeOffset));
 
-	console_log(newTime);
+//	console_log(newTime);
 
 //	var dateFormater = d3.timeFormat("%A %d %B %Y %H:%M:%S");
 
@@ -282,13 +310,9 @@ function ready(error,data,num) {
 
 //	document.getElementById('update').innerHTML = "Last update: " + data[0][0].timestamp;
 	
-	
-	if(num == 1 && selector1 == "PM10") {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
-	if(num == 1 && selector1 == "PM25") {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
+	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
 	if(num == 2 && selector1 == "Official_AQI_US"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_AQI);};
-	if(num == 3 && selector1 == "Temperature"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexatemp);};
-	if(num == 3 && selector1 == "Humidity"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexahumi);};
-	if(num == 3 && selector1 == "Pressure"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexapressure);};
+	if(num == 3 && (selector1 == "Temperature" || selector1 == "Humidity" || selector1 == "Pressure" )){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[selector1]);}));};
 
 	document.getElementById('loading').style.display='none';
 
@@ -303,36 +327,16 @@ function reload(val){
 
 	selector1 = val;
 	
-	document.getElementById('legend_Official_AQI_US').style.display='none';
-	document.getElementById('legend_PM10').style.display='none';
-	document.getElementById('legend_PM25').style.display='none';
-	document.getElementById('legend_Temperature').style.display='none';
-	document.getElementById('legend_Humidity').style.display='none';
-	document.getElementById('legend_Pressure').style.display='none';
+	switch_legend(selector1);
 
-	hexagonheatmap.initialize(scale_options[val]);
+	hexagonheatmap.initialize(scale_options[selector1]);
 
-	document.getElementById('legend_'+val).style.display='block';
-
-	switch (val) {
-		case "PM10":
-					hexagonheatmap.data(hmhexaPM_aktuell);
-					break;
-		case "PM25":
-					hexagonheatmap.data(hmhexaPM_aktuell);
-					break;
-		case "Official_AQI_US":
-					hexagonheatmap.data(hmhexaPM_AQI);
-					break;
-		case "Temperature":
-					hexagonheatmap.data(hmhexatemp);
-					break;
-		case "Humidity":
-					hexagonheatmap.data(hmhexahumi);
-					break;
-		case "Pressure":
-					hexagonheatmap.data(hmhexapressure);
-					break;
+	if (val == "PM10" || val == "PM25") {
+		hexagonheatmap.data(hmhexaPM_aktuell);
+	} else if (val == "Official_AQI_US") {
+		hexagonheatmap.data(hmhexaPM_AQI);
+	} else if (val == "Temperature" || val == "Humidity" || val == "Pressure") {
+		hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[val]);}));
 	}
 
 	if (document.getElementById("sidebar").style.display === "block") {
@@ -390,49 +394,36 @@ function interpolColor(a, b, amount) {
 
 //MENU
 
+function close_sidebar() {
+	var x = document.getElementById("sidebar");
+
+	if (x.style.display === "block") {
+		x.style.display = "none";
+		if(!d3.select("#results").empty()){
+			d3.select("#results").remove();
+		};
+	} else {
+		x.style.display = "block";
+	};
+}
 
 var menu = document.getElementById("menu");
-menu.addEventListener("click", function(e) {
-
-	var x = document.getElementById("sidebar");
-
-	if (x.style.display === "block") {
-		x.style.display = "none";
-		if(!d3.select("#results").empty()){
-			d3.select("#results").remove();
-		};
-	} else {
-		x.style.display = "block";
-	};
-});
+menu.addEventListener("click", close_sidebar);
 
 var close_link = document.getElementById("close");
-close_link.addEventListener("click", function(e) {
+close_link.addEventListener("click", close_sidebar);
 
-	var x = document.getElementById("sidebar");
-
-	if (x.style.display === "block") {
-		x.style.display = "none";
-		if(!d3.select("#results").empty()){
-			d3.select("#results").remove();
-		};
-	} else {
-		x.style.display = "block";
-	};
-});
-
-var erkl = document.getElementById("erklaerung");
+var erkl = document.getElementById("explanation");
 erkl.addEventListener("click", function(e) {
 
 	var x = document.getElementById("map-info");
 
-	console_log(x.style.display);
 	if (x.style.display === "none") {
 		x.style.display = "block";
-		document.getElementById("erklaerung").innerHTML = "Erklärung ausblenden";
+		document.getElementById("explanation").innerHTML = translate.tr(lang,"Hide explanation");
 	} else {
 		x.style.display = "none";
-		document.getElementById("erklaerung").innerHTML = "Erklärung einblenden";
+		document.getElementById("explanation").innerHTML = translate.tr(lang,"Show explanation");
 	};
 });
 
@@ -450,9 +441,9 @@ L.HexbinLayer = L.Layer.extend({
 //		REVOIR LE DOUBLECLIQUE
 
 		click: 	function(e) {
-					setTimeout(function() {
+					d3.timeout(function() {
 						if(map.clicked == 1){
-							sensorNr(e)
+							sensorNr(e);
 						}
 					}, 300)},
 
@@ -464,14 +455,10 @@ L.HexbinLayer = L.Layer.extend({
 		},
 		value: function (d) {
 
-//		Median everywhere!
+//			Median everywhere!
+			var e = d.filter(function(value) {return ! value.o.data[selector1].isNaN;});
+			return d3.median(e, (o) => o.o.data[selector1]);
 
-			if (selector1 == "PM10"){return parseInt(d3.median(d, (o) => o.o.data.PM10))}
-			if (selector1 == "PM25"){return parseInt(d3.median(d, (o) => o.o.data.PM25))}
-			if (selector1 == "Official_AQI_US"){return d3.median(d, (o) => o.o.data.AQI)}
-			if (selector1 == "Temperature"){return d3.median(d, (o) => o.o.data.Temperature)}
-			if (selector1 == "Humidity"){return d3.median(d, (o) => o.o.data.Humidity)}
-			if (selector1 == "Pressure"){return d3.median(d, (o) => o.o.data.Pressure)}
 		}
 	},
 
@@ -684,7 +671,7 @@ L.hexbinLayer = function(options) {
 function sensorNr(data){
 
 	var inner_pre = "#";
-
+	
 	if (selector1 != "Official_AQI_US") {
 		inner_pre = "(+) #"
 	}
@@ -701,77 +688,36 @@ function sensorNr(data){
 //		document.getElementById('menu').innerHTML='Close';
 	};
 
-	if (data.length == 1){
-		var textefin = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensor</th>";
+	var textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>"+translate.tr(lang,'Sensor')+"</th><th class = 'title'>"+translate.tr(lang,titles[selector1])+"</th></tr>";
+	if (data.length > 1) {
+		textefin += "<tr><td class='idsens'>Median "+data.length+" Sens.</td><td>"+parseInt(d3.median(data, (o) => o.o.data[selector1]))+"</td></tr>";
+	}
+	var sensors = '';
+	data.forEach(function(i) {
+		sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td>";
 		if (selector1 == "PM10"){
-			textefin += "<th class = 'titre'>PM10 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='P1sens'>"+parseInt(data[0].o.data.PM10)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1]+"</td></tr>";
 		};
 		if (selector1 == "PM25"){
-			textefin += "<th class = 'titre'>PM2.5 &micro;g/m&sup3;</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='P2sens'>"+parseInt(data[0].o.data.PM25)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1]+"</td></tr>";
 		};
 		if (selector1 == "Official_AQI_US"){
-			textefin += "<th class = 'titre'>AQI US</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='AQIsens'>"+parseInt(data[0].o.data.AQI)+" ("+data[0].o.data.origin+")</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1]+" ("+i.o.data.origin+")</td></tr>";
 		};
 		if (selector1 == "Temperature"){
-			textefin += "<th class = 'titre'>Temperatur °C</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='tempsens'>"+parseInt(data[0].o.data.Temperature)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1]+"</td></tr>";
 		};
 		if (selector1 == "Humidity"){
-			textefin += "<th class = 'titre'>Feuchtigkeit %</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='humisens'>"+parseInt(data[0].o.data.Humidity)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1]+"</td></tr>";
 		};
 		if (selector1 == "Pressure"){
-			textefin += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens' value="+data[0].o.id+">"+inner_pre+data[0].o.id+"</td><td id='pressuresens'>"+parseInt(data[0].o.data.Pressure)+"</td></tr><tr id='graph_"+data[0].o.id+"'></tr></table>";
+			sensors += "<td>"+i.o.data[selector1].toFixed(1)+"</td></tr>";
 		};
-	};
+		sensors += "<tr id='graph_"+i.o.id+"'></tr>";
+	});
+	textefin += sensors;
 
-	if (data.length > 1){
-
-		var sensors = '';
-		var texte = "<table id='results' style='width:380px;'><tr><th class ='titre'>Sensors</th>";
-		if (selector1 == "PM10"){
-			texte += "<th class = 'titre'>PM10 &micro;g/m&sup3;</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='P1sens'>"+parseInt(d3.median(data, (o) => o.o.data.PM10))+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='P1sens'>"+i.o.data.PM10+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-		};
-		if (selector1 == "PM25"){
-			texte += "<th class = 'titre'>PM2.5 &micro;g/m&sup3;</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='P2sens'>"+parseInt(d3.median(data, (o) => o.o.data.PM25))+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='P2sens'>"+i.o.data.PM25+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-		};
-		if (selector1 == "Official_AQI_US"){
-			texte += "<th class = 'titre'>AQI US</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='AQIsens'>"+parseInt(d3.median(data, (o) => o.o.data.AQI))+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='AQIsens'>"+i.o.data.AQI+" ("+i.o.data.origin+")</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-		};
-		if (selector1 == "Temperature"){
-			texte += "<th class = 'titre'>Temperatur °C</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='tempsens'>"+parseInt(d3.median(data, (o) => o.o.data.Temperature))+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='tempsens'>"+i.o.data.Temperature+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-		};
-		if (selector1 == "Humidity"){
-			texte += "<th class = 'titre'>Feuchtigkeit %</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='humisens'>"+parseInt(d3.median(data, (o) => o.o.data.Humidity))+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='humisens'>"+i.o.data.Humidity+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-
-		};
-		if (selector1 == "Pressure"){
-			texte += "<th class = 'titre'>Druck hPa</th></tr><tr><td class='idsens'>Median "+data.length+" Sens.</td><td id='pressuresens'>"+(d3.median(data, (o) => o.o.data.Pressure)).toFixed(1)+"</td></tr>";
-
-			data.forEach(function(i) {
-				sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td><td id='pressuresens'>"+i.o.data.Pressure.toFixed(1)+"</td></tr><tr id='graph_"+i.o.id+"'></tr>";
-			});
-		};
-		var textefin = texte + sensors + "</table>";
-	};
+	textefin += "</table>";
 
 	div.transition()
 		.duration(200)
@@ -790,30 +736,29 @@ function aqius(val,type){
 
 	var index;
 
-	if (type == 'PM10'){
-		if(parseInt(val) >= 0 && parseInt(val)<= 54){index = formula(50,0,54,0,parseInt(val))};
-		if(parseInt(val) >= 55 && parseInt(val)<= 154){index = formula(100,51,154,55,parseInt(val))};
-		if(parseInt(val) >= 155 && parseInt(val)<= 254){index = formula(150,101,254,155,parseInt(val))};
-		if(parseInt(val) >= 255 && parseInt(val)<= 354){index = formula(200,151,354,255,parseInt(val)) };
-		if(parseInt(val) >= 355 && parseInt(val)<= 424){index = formula(300,201,424,355,parseInt(val))};
-		if(parseInt(val) >= 425 && parseInt(val)<= 504){index = formula(400,301,504,425,parseInt(val))};
-		if(parseInt(val) >= 505 && parseInt(val)<= 604){index = formula(500,401,604,505,parseInt(val))};
+	if (val >=0) {
+		if (type == 'PM10'){
+			if(parseInt(val)<= 54){index = formula(50,0,54,0,parseInt(val))}
+			else if(parseInt(val)<= 154){index = formula(100,51,154,55,parseInt(val))}
+			else if(parseInt(val)<= 254){index = formula(150,101,254,155,parseInt(val))}
+			else if(parseInt(val)<= 354){index = formula(200,151,354,255,parseInt(val))}
+			else if(parseInt(val)<= 424){index = formula(300,201,424,355,parseInt(val))}
+			else if(parseInt(val)<= 504){index = formula(400,301,504,425,parseInt(val))}
+			else if(parseInt(val)<= 604){index = formula(500,401,604,505,parseInt(val))}
+			else {index = 500};
+		};
 
-		if(parseInt(val) > 604){index = 500};
-	};
-
-	if (type == 'PM25'){
-		if(val.toFixed(1) >= 0 && val.toFixed(1)<= 12){index = formula(50,0,12,0,val.toFixed(1))};
-		if(val.toFixed(1) >= 12.1 && val.toFixed(1)<= 35.4){index = formula(100,51,35.4,12.1,val.toFixed(1))};
-		if(val.toFixed(1) >= 35.5 && val.toFixed(1)<= 55.4){index = formula(150,101,55.4,35.5,val.toFixed(1))};
-		if(val.toFixed(1) >= 55.5 && val.toFixed(1)<= 150.4){index = formula(200,151,150.4,55.5,val.toFixed(1))};
-		if(val.toFixed(1) >= 150.5 && val.toFixed(1)<= 250.4){index = formula(300,201,250.4,150.5,val.toFixed(1))};
-		if(val.toFixed(1) >= 250.5 && val.toFixed(1)<= 350.4){index = formula(400,301,350.4,250.5,val.toFixed(1))};
-		if(val.toFixed(1) >= 350.5 && val.toFixed(1)<= 550.4){index = formula(500,401,550.4,350.5,val.toFixed(1))};
-
-		if(val.toFixed(1) > 550.4){index = 500};
-	};
-
+		if (type == 'PM25'){
+			if(val.toFixed(1)<= 12){index = formula(50,0,12,0,val.toFixed(1))}
+			else if(val.toFixed(1)<= 35.4){index = formula(100,51,35.4,12.1,val.toFixed(1))}
+			else if(val.toFixed(1)<= 55.4){index = formula(150,101,55.4,35.5,val.toFixed(1))}
+			else if(val.toFixed(1)<= 150.4){index = formula(200,151,150.4,55.5,val.toFixed(1))}
+			else if(val.toFixed(1)<= 250.4){index = formula(300,201,250.4,150.5,val.toFixed(1))}
+			else if(val.toFixed(1)<= 350.4){index = formula(400,301,350.4,250.5,val.toFixed(1))}
+			else if(val.toFixed(1)<= 550.4){index = formula(500,401,550.4,350.5,val.toFixed(1))}
+			else {index = 500};
+		};
+	}
 	return index;
 };
 
@@ -887,7 +832,6 @@ function removeInArray(array) {
 
 var x, i, j, selElmnt, a, b, c;
 /*look for any elements with the class "custom-select":*/
-console_log(selector1);
 x = document.getElementsByClassName("custom-select");
 for (i = 0; i < x.length; i++) {
 	selElmnt = x[i].getElementsByTagName("select")[0];
@@ -895,7 +839,7 @@ for (i = 0; i < x.length; i++) {
 	/*for each element, create a new DIV that will act as the selected item:*/
 	a = document.createElement("DIV");
 	a.setAttribute("class", "select-selected");
-	a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+	a.innerHTML = translate.tr(lang,selElmnt.options[selElmnt.selectedIndex].innerHTML);
 	x[i].appendChild(a);
 	/*for each element, create a new DIV that will contain the option list:*/
 	b = document.createElement("DIV");
@@ -907,7 +851,7 @@ for (i = 0; i < x.length; i++) {
 			/*for each option in the original select element,
 			create a new DIV that will act as an option item:*/
 			c = document.createElement("DIV");
-			c.innerHTML = selElmnt.options[j].innerHTML;
+			c.innerHTML = translate.tr(lang,selElmnt.options[j].innerHTML);
 			c.addEventListener("click", function(e) {
 				/*when an item is clicked, update the original select box,
 				and the selected item:*/
