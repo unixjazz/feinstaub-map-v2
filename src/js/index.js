@@ -136,8 +136,10 @@ if (typeof query.nooverlay !== "undefined") {
 	document.getElementById("betterplace").style.display = "inline-block";
 }
 
-var cooCenter = [50.495171, 9.730827];
-var zoomLevel = 6;
+//var cooCenter = [50.495171, 9.730827];
+//var zoomLevel = 6;
+var cooCenter = [0, 0];
+var zoomLevel = 2;
 
 if (location.hash) {
 	var hash_params = location.hash.split("/");
@@ -262,6 +264,8 @@ function check_values(obj) {
 		if ((selector1 == "Humidity") && (obj >=0 ) && (obj <= 100)) { result = true; }
 		else if ((selector1 == "Temperature") && (obj <= 70 && obj >= -50)) { result = true; }
 		else if ((selector1 == "Pressure") && (obj >= 850) && (obj < 1200)) { result = true; }
+		else if ((selector1 == "PM10") && (obj < 1900)) { result = true; }
+		else if ((selector1 == "PM25") && (obj < 900)) { result = true; }
 	}
 	return result;
 }
@@ -329,7 +333,7 @@ function ready(error,data,num) {
 
 //	document.getElementById('update').innerHTML = "Last update: " + data[0][0].timestamp;
 	
-	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell);};
+	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return check_values(value.data[selector1]);}));};
 	if(num == 2 && selector1 == "Official_AQI_US"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_AQI);};
 	if(num == 3 && (selector1 == "Temperature" || selector1 == "Humidity" || selector1 == "Pressure" )){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[selector1]);}));};
 
@@ -351,7 +355,7 @@ function reload(val){
 	hexagonheatmap.initialize(scale_options[selector1]);
 
 	if (val == "PM10" || val == "PM25") {
-		hexagonheatmap.data(hmhexaPM_aktuell);
+		hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return check_values(value.data[val]);}));
 	} else if (val == "Official_AQI_US") {
 		hexagonheatmap.data(hmhexaPM_AQI);
 	} else if (val == "Temperature" || val == "Humidity" || val == "Pressure") {
@@ -475,8 +479,7 @@ L.HexbinLayer = L.Layer.extend({
 		value: function (d) {
 
 //			Median everywhere!
-			var e = d.filter(function(value) {return ! value.o.data[selector1].isNaN;});
-			return d3.median(e, (o) => o.o.data[selector1]);
+			return d3.median(d, (o) => o.o.data[selector1]);
 
 		}
 	},
