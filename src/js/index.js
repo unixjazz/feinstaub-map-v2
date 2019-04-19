@@ -117,6 +117,25 @@ window.onmousemove = function (e) {
 	};
 };
 
+var i=0;
+var telem;
+var search_values=location.search.replace('\?','').split('&');
+var query={}
+for(i=0;i<search_values.length;i++){
+    telem=search_values[i].split('=');
+    query[telem[0]]='';
+    if (typeof telem[1] != 'undefined') {
+		query[telem[0]]=telem[1];
+	}
+}
+
+console.log("Query No overlay: "+query.nooverlay);
+if (typeof query.nooverlay !== "undefined") {
+	var nooverlay = true;
+} else {
+	document.getElementById("betterplace").style.display = "inline-block";
+}
+
 var cooCenter = [50.495171, 9.730827];
 var zoomLevel = 6;
 
@@ -154,7 +173,7 @@ window.onload=function(){
 <p>By clicking on the plus symbol next to a sensor ID, you can display two graphics: the individual measurements for the last 24 hours and the 24 hours floating mean for the last seven days. For technical reasons, the first of the 8 days displayed on the graphic has to stay empty.\
 The values are refreshed every 5 minutes in order to fit with the measurement frequency of the Airrohr sensors.</p> \
 <p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>");
-	
+	document.getElementById('betterplace').innerHTML="<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>";
 
 	var custom_select = document.getElementById('custom-select');
 	var select_options = custom_select.getElementsByTagName('select')[0].getElementsByTagName('option');
@@ -222,7 +241,7 @@ new L.Hash(map);
 
 tiles = L.tileLayer('https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png',{
 			attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-			maxZoom: 18}).addTo(map);
+			maxZoom: 16}).addTo(map);
 
 function switch_legend(val) {
 	var legends = document.getElementById('legendcontainer').querySelectorAll("[id^=legend_]");

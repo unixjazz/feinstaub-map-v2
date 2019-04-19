@@ -58,4 +58,12 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 <p>Ein Klick auf das Plus vor der Sensor-ID blendet zwei Grafiken ein. Die erste Grafik zeigt den '24 h floating average' (den gleitenden 24-Stunden-Mittelwert) der letzten 7 Tage an. \
 Die zweite Grafik 'Last 24 hours' zeigt den Tagesverlauf für die letzten 24 Stunden.</p>",
 	},
+
+// Betterplace
+	"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org": {
+				"de": "Jetzt spenden für 'Luftdaten.info' (Hardware, Software) auf betterplace.org!",
+	},
+	"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>": {
+				"de": "Jetzt für<br/>Luftdaten.info<br/>spenden auf<br/><span>Betterplace.org</span>",
+	},
 }

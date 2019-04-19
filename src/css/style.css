@@ -1,6 +1,13 @@
+* {
+	font-family: arial, sans-serif;
+}
+
 body {
+	font-family: arial, sans-serif;
 	height: 100%;
 	width:100%;
+	margin: 0px;
+	padding: 0px;
 }
 
 .app {
@@ -8,24 +15,54 @@ body {
 	width:100%;
 }
 
-#map { 
-	position:absolute;
-	top:0px;
-	left:0px;
-	width: 100vw; 
-	height: 100vh; 
-	z-index: 0;
+#topcontainer {vertical-align: top;
+    position: absolute;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+	pointer-events: none;
+}
+
+#betterplace {
+	text-align: center;
+	border: 0;
+	position: relative;
+	top: 0;
+	left: 0;
+	float: left;
+	z-index: 500;
+	max-width: 35%;
+/*	clear: both; */
+	display: none;
+	padding: 10px;
+	background-color: rgba(255,255,255,0.8);
+	pointer-events: all;
+}
+	
+#betterplace img {
+	border: 0px;
+	max-width: 100%;
+}
+
+#betterplace a {
+	color: black;
+	text-decoration: none;
+}
+
+#betterplace span {
+	font-weight: bold;
+	color: rgb(56, 181, 173);
+
 }
 
 #update {
-	font-family: arial, sans-serif;
 	color:black;
 	font-weight: bold;
 	font-size: 14px;
-	position:absolute;
+	position:relative;
 	top:20px;
-	left:100px;
-	width: auto;
+	left:10px;
+	float: left;
 	padding: 5px 10px;
 	text-align: center;
 	height: auto;
@@ -36,6 +73,15 @@ body {
 
 #update:hover, #update:focus {
 	background-color: rgba(56, 181, 173, 1);
+}
+
+#map { 
+	position:absolute;
+	top:0px;
+	left:0px;
+	width: 100vw; 
+	height: 100vh; 
+	z-index: 0;
 }
 
 #UI_container {
@@ -345,7 +391,7 @@ tr {
 #menu{
 	background-color: rgba(56, 181, 173, 1);
 	color: white;
-	font-size: 32px;
+	font-size: 30px;
 	border: none;
 	cursor: pointer; 
 	top:0px;
@@ -375,9 +421,12 @@ tr {
 #close {
 	padding: 10px;
 	font-size: 120%;
-	font-family: arial, sans-serif;
 	color:black;
 	cursor: pointer;
 	pointer-events: all;
 	display: inline-block;
+}
+
+.leaflet-control {
+	margin-top: 110px !important;
 }
