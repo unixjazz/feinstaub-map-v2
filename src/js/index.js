@@ -4,19 +4,18 @@ import 'leaflet/dist/leaflet.css';
 
 //use d3-require to call from the internet
 
-import * as d3Selection from'd3-selection';
-import * as d3Timer from'd3-timer';
-import * as d3TimeFormat from'd3-time-format';
-import * as d3Scale from'd3-scale';
-import * as d3Array from'd3-array';
-import * as d3Geo from'd3-geo';
-//import * as d3Queue from'd3-queue';
-import * as d3Request from'd3-request';
-import * as d3Time from'd3-time';
-import * as d3Hexbin from "d3-hexbin";
-import * as d3Transistion from "d3-transition";
+import * as d3_TimeFormat from'd3-time-format';
+import * as d3_Selection from'd3-selection';
+import * as d3_Scale from'd3-scale';
+import * as d3_Geo from'd3-geo';
+import * as d3_Hexbin from "d3-hexbin";
+import * as d3_Fetch from'd3-fetch';
+import * as d3_Time from'd3-time';
+import * as d3_Timer from'd3-timer';
+import * as d3_Array from'd3-array';
+import * as d3_Transistion from "d3-transition";
 
-const d3 = Object.assign({}, d3Selection, d3Timer,d3TimeFormat,d3Scale,d3Array,d3Geo,d3Request,d3Time,d3Hexbin,d3Transistion);
+const d3 = Object.assign({},d3_Selection,d3_Scale,d3_Geo,d3_Hexbin,d3_Array,d3_Fetch,d3_Time,d3_TimeFormat,d3_Timer);
 
 import '../css/style.css';
 import * as places from './places.js';
@@ -197,18 +196,18 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 //	REVOIR ORDRE DANS FONCTION READY
 
-	d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json", function(error,data){ready(error,data,1);
-		d3.json("https://maps.luftdaten.info/data/v2/data.24h.json", function(error,data){ready(error,data,2)});
-		d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json", function(error,data){ready(error,data,3)});
+	d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
+		d3.json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
+		d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
 	})
 
 	d3.interval(function(){
 
 		d3.selectAll('path.hexbin-hexagon').remove();
 
-		d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json", function(error,data){ready(error,data,1);
-			d3.json("https://maps.luftdaten.info/data/v2/data.24h.json", function(error,data){ready(error,data,2)});
-			d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json", function(error,data){ready(error,data,3)});
+		d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
+			d3.json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
+			d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
 		})
 
 		console_log('reload')
@@ -270,9 +269,7 @@ function check_values(obj) {
 	return result;
 }
 
-function ready(error,data,num) {
-
-	if (error) throw error;
+function ready(data,num) {
 
 	if (num == 1) {
 		hmhexaPM_aktuell = data.reduce(function(filtered, item) {
