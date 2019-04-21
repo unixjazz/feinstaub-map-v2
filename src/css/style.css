@@ -32,18 +32,12 @@ body {
 	float: left;
 	z-index: 500;
 	max-width: 35%;
-/*	clear: both; */
 	display: none;
 	padding: 10px;
 	background-color: rgba(255,255,255,0.8);
 	pointer-events: all;
 }
 	
-#betterplace img {
-	border: 0px;
-	max-width: 100%;
-}
-
 #betterplace a {
 	color: black;
 	text-decoration: none;
@@ -52,7 +46,6 @@ body {
 #betterplace span {
 	font-weight: bold;
 	color: rgb(56, 181, 173);
-
 }
 
 #update {

@@ -132,7 +132,7 @@ console.log("Query No overlay: "+query.nooverlay);
 if (typeof query.nooverlay !== "undefined") {
 	var nooverlay = true;
 } else {
-	document.getElementById("betterplace").style.display = "inline-block";
+	d3.select("#betterplace").style.display = "inline-block";
 }
 
 //var cooCenter = [50.495171, 9.730827];
@@ -165,16 +165,16 @@ if (location.hash) {
 window.onload=function(){
 
 	// enable elements
-	document.getElementById('custom-select').style.display='inline-block';
-	document.getElementById('legend_PM10').style.display='block';
-	document.getElementById('close').innerHTML=translate.tr(lang,'(close)');
-	document.getElementById('explanation').innerHTML=translate.tr(lang,'Show explanation');
-	document.getElementById('map-info').innerHTML=translate.tr(lang,"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
+	d3.select('#custom-select').style.display='inline-block';
+	d3.select('#legend_PM10').style.display='block';
+	d3.select('#close').innerHTML=translate.tr(lang,'(close)');
+	d3.select('#explanation').innerHTML=translate.tr(lang,'Show explanation');
+	d3.select('#map-info').innerHTML=translate.tr(lang,"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
 <p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
 <p>By clicking on the plus symbol next to a sensor ID, you can display two graphics: the individual measurements for the last 24 hours and the 24 hours floating mean for the last seven days. For technical reasons, the first of the 8 days displayed on the graphic has to stay empty.\
 The values are refreshed every 5 minutes in order to fit with the measurement frequency of the Airrohr sensors.</p> \
 <p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>");
-	document.getElementById('betterplace').innerHTML="<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>";
+	d3.select('#betterplace').innerHTML="<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>";
 
 	var custom_select = document.getElementById('custom-select');
 	var select_options = custom_select.getElementsByTagName('select')[0].getElementsByTagName('option');
@@ -341,7 +341,8 @@ function ready(data,num) {
 function reload(val){
 	d3.selectAll('path.hexbin-hexagon').remove();
 	d3.select("#results").remove();
-	document.getElementById('sidebar').style.display='none';
+	sidebar = d3.select('#sidebar');
+	sidebar.style.display='none';
 
 	console_log(val);
 
@@ -359,13 +360,12 @@ function reload(val){
 		hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[val]);}));
 	}
 
-	if (document.getElementById("sidebar").style.display === "block") {
-		document.getElementById("sidebar").style.display = "none";
+	if (sidebar.style.display === "block") {
+		sidebar.style.display = "none";
 		if(!d3.select("#results").empty()){
 			d3.select("#results").remove();
 		};
 	};
-
 };
 
 function getRightValue(array,type){
@@ -379,25 +379,23 @@ function getRightValue(array,type){
 function color(val){
 	var col= parseInt(val);
 
-	if(val>= 0 && val < 25){ return "#00796b";};
-	if(val>= 25 && val < 50){
+	if(val>= 0 && val < 25) {
+		return "#00796b";
+	} else if(val < 50){
 		var couleur = interpolColor('#00796b','#f9a825',(col-25)/25);
 		return couleur;
-	};
-	if(val>= 50 && val < 75){
+	} else if (val < 75) {
 		var couleur = interpolColor('#f9a825','#e65100',(col-50)/25);
 		return couleur;
-	};
-	if(val>= 75 && val < 100){
+	} else if (val < 100) {
 		var couleur = interpolColor('#e65100','#dd2c00',(col-75)/25);
 		return couleur;
-	};
-	if(val>=100 && val < 500){
+	} else if (val < 500) {
 		var couleur = interpolColor('#dd2c00','#8c0084',(col-100)/400);
 		return couleur;
+	} else {
+		return "#8c0084";
 	};
-
-	if(val>=100 && val < 500){ return "#8c0084";};
 };
 
 function interpolColor(a, b, amount) {
@@ -415,7 +413,7 @@ function interpolColor(a, b, amount) {
 //MENU
 
 function close_sidebar() {
-	var x = document.getElementById("sidebar");
+	var x = d3.select("#sidebar");
 
 	if (x.style.display === "block") {
 		x.style.display = "none";
@@ -427,23 +425,25 @@ function close_sidebar() {
 	};
 }
 
-var menu = document.getElementById("menu");
-menu.addEventListener("click", close_sidebar);
+//var menu = d3.select("#menu");
+//menu.addEventListener("click", close_sidebar);
+d3.select("#menu").on("click", close_sidebar);
 
-var close_link = document.getElementById("close");
-close_link.addEventListener("click", close_sidebar);
+//var close_link = d3.select("#close");
+//close_link.addEventListener("click", close_sidebar);
+d3.select("#close").on("click", close_sidebar);
 
-var erkl = document.getElementById("explanation");
-erkl.addEventListener("click", function(e) {
+var erkl = d3.select("#explanation");
+erkl.on("click", function(e) {
 
 	var x = document.getElementById("map-info");
 
 	if (x.style.display === "none") {
 		x.style.display = "block";
-		document.getElementById("explanation").innerHTML = translate.tr(lang,"Hide explanation");
+		d3.select("explanation").innerHTML = translate.tr(lang,"Hide explanation");
 	} else {
 		x.style.display = "none";
-		document.getElementById("explanation").innerHTML = translate.tr(lang,"Show explanation");
+		d3.select("explanation").innerHTML = translate.tr(lang,"Show explanation");
 	};
 });
 
@@ -701,10 +701,9 @@ function sensorNr(data){
 		d3.select("#results").remove();
 	};
 
-	var x = document.getElementById("sidebar");
+	var x = d3.select("#sidebar");
 	if (x.style.display = "none") {
 		x.style.display = "block";
-//		document.getElementById('menu').innerHTML='Close';
 	};
 
 	var textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>"+translate.tr(lang,'Sensor')+"</th><th class = 'title'>"+translate.tr(lang,titles[selector1])+"</th></tr>";
@@ -851,66 +850,64 @@ function removeInArray(array) {
 
 var x, i, j, selElmnt, a, b, c;
 /*look for any elements with the class "custom-select":*/
-x = document.getElementsByClassName("custom-select");
-for (i = 0; i < x.length; i++) {
-	selElmnt = x[i].getElementsByTagName("select")[0];
-	selector1 = selElmnt.value;
-	/*for each element, create a new DIV that will act as the selected item:*/
-	a = document.createElement("DIV");
-	a.setAttribute("class", "select-selected");
-	a.innerHTML = translate.tr(lang,selElmnt.options[selElmnt.selectedIndex].innerHTML);
-	x[i].appendChild(a);
-	/*for each element, create a new DIV that will contain the option list:*/
-	b = document.createElement("DIV");
-	b.setAttribute("class", "select-items select-hide");
+x = document.getElementById("custom-select");
+selElmnt = x.getElementsByTagName("select")[0];
+selector1 = selElmnt.value;
+/*for each element, create a new DIV that will act as the selected item:*/
+a = document.createElement("DIV");
+a.setAttribute("class", "select-selected");
+a.innerHTML = translate.tr(lang,selElmnt.options[selElmnt.selectedIndex].innerHTML);
+x.appendChild(a);
+/*for each element, create a new DIV that will contain the option list:*/
+b = document.createElement("DIV");
+b.setAttribute("class", "select-items select-hide");
 
-	for (j = 0; j < selElmnt.length; j++) {
-		if (selElmnt.options[j].value != selector1){
+for (j = 0; j < selElmnt.length; j++) {
+	if (selElmnt.options[j].value != selector1){
 
-			/*for each option in the original select element,
-			create a new DIV that will act as an option item:*/
-			c = document.createElement("DIV");
-			c.innerHTML = translate.tr(lang,selElmnt.options[j].innerHTML);
-			c.addEventListener("click", function(e) {
-				/*when an item is clicked, update the original select box,
-				and the selected item:*/
-				var y, i, k, s, h;
-				s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-				h = this.parentNode.previousSibling;
-				for (i = 0; i < s.length; i++) {
-					if (s.options[i].innerHTML == this.innerHTML) {
+		/*for each option in the original select element,
+		create a new DIV that will act as an option item:*/
+		c = document.createElement("DIV");
+		c.innerHTML = translate.tr(lang,selElmnt.options[j].innerHTML);
+		c.addEventListener("click", function(e) {
+			/*when an item is clicked, update the original select box,
+			and the selected item:*/
+			var y, i, k, s, h;
+			s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+			h = this.parentNode.previousSibling;
+			for (i = 0; i < s.length; i++) {
+				if (s.options[i].innerHTML == this.innerHTML) {
 
-						reload(s.options[i].value);
-						s.selectedIndex = i;
-						h.innerHTML = this.innerHTML;
+					reload(s.options[i].value);
+					s.selectedIndex = i;
+					h.innerHTML = this.innerHTML;
 
-//						console_log(h.value);
-//						console_log(this.innerHTML);
+//					console_log(h.value);
+//					console_log(this.innerHTML);
 //
-//						y = this.parentNode.getElementsByClassName("same-as-selected");
-//						for (k = 0; k < y.length; k++) {
-//							y[k].removeAttribute("class");
-//						}
-//						this.setAttribute("class", "same-as-selected");
-						break;
-					}
+//					y = this.parentNode.getElementsByClassName("same-as-selected");
+//					for (k = 0; k < y.length; k++) {
+//						y[k].removeAttribute("class");
+//					}
+//					this.setAttribute("class", "same-as-selected");
+					break;
 				}
-				h.click();
-			});
-			b.appendChild(c);
-		}
+			}
+			h.click();
+		});
+		b.appendChild(c);
 	}
-
-	x[i].appendChild(b);
-	a.addEventListener("click", function(e) {
-		/*when the select box is clicked, close any other select boxes,
-		and open/close the current select box:*/
-		e.stopPropagation();
-		closeAllSelect(this);
-		this.nextSibling.classList.toggle("select-hide");
-		this.classList.toggle("select-arrow-active");
-	});
 }
+
+x.appendChild(b);
+a.addEventListener("click", function(e) {
+	/*when the select box is clicked, close any other select boxes,
+	and open/close the current select box:*/
+	e.stopPropagation();
+	closeAllSelect(this);
+	this.nextSibling.classList.toggle("select-hide");
+	this.classList.toggle("select-arrow-active");
+});
 
 function closeAllSelect(elmnt) {
 	/*a function that will close all select boxes in the document,
