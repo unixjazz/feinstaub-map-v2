@@ -17,6 +17,8 @@ import * as d3_Transistion from "d3-transition";
 
 const d3 = Object.assign({},d3_Selection,d3_Scale,d3_Geo,d3_Hexbin,d3_Array,d3_Fetch,d3_Time,d3_TimeFormat,d3_Timer);
 
+import * as config from './config.js';
+
 import '../css/style.css';
 import * as places from './places.js';
 import * as zooms from './zooms.js';
@@ -32,7 +34,7 @@ var hmhexa_t_h_p;
 var map;
 var tiles;
 
-var selector1 = "PM10";
+var selector1 = config.selection;
 
 var lang = 	lang = translate.getFirstBrowserLanguage().substring(0,2);
 
@@ -128,21 +130,21 @@ for(i=0;i<search_values.length;i++){
 	}
 }
 
-console.log("Query No overlay: "+query.nooverlay);
+console_log("Query No overlay: "+query.nooverlay);
 if (typeof query.nooverlay !== "undefined") {
 	var nooverlay = true;
 } else {
-	d3.select("#betterplace").style.display = "inline-block";
+	d3.select("#betterplace").style("display", "inline-block");
 }
 
-//var cooCenter = [50.495171, 9.730827];
+//var coordsCenter = [50.495171, 9.730827];
 //var zoomLevel = 6;
-var cooCenter = [0, 0];
-var zoomLevel = 2;
+var coordsCenter = config.center;
+var zoomLevel = config.zoom;
 
 if (location.hash) {
 	var hash_params = location.hash.split("/");
-	var cooCenter = [hash_params[1],hash_params[2]];
+	var coordsCenter = [hash_params[1],hash_params[2]];
 	var zoomLevel = hash_params[0].substring(1);
 } else {
 	var hostname = location.hostname;
@@ -151,13 +153,13 @@ if (location.hash) {
 		var place = hostname_parts[0].toLowerCase();
 		console_log(place);
 		if (typeof places[place] !== 'undefined' && places[place] !== null) {
-			var cooCenter = places[place];
+			var coordsCenter = places[place];
 			var zoomLevel = 11;
 		}
 		if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) {
 			var zoomLevel = zooms[place];
 		}
-		console_log("Center: "+cooCenter);
+		console_log("Center: "+coordsCenter);
 		console_log("Zoom: "+zoomLevel);
 	}
 };
@@ -165,28 +167,30 @@ if (location.hash) {
 window.onload=function(){
 
 	// enable elements
-	d3.select('#custom-select').style.display='inline-block';
-	d3.select('#legend_PM10').style.display='block';
-	d3.select('#close').innerHTML=translate.tr(lang,'(close)');
-	d3.select('#explanation').innerHTML=translate.tr(lang,'Show explanation');
-	d3.select('#map-info').innerHTML=translate.tr(lang,"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
+	d3.select('#custom-select').style("display", "inline-block");
+	d3.select('#legend_PM10').style("display", "block");
+	d3.select('#close').html(translate.tr(lang,'(close)'));
+	d3.select('#explanation').html(translate.tr(lang,'Show explanation'));
+	d3.select('#map-info').html(translate.tr(lang,"<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
 <p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
 <p>By clicking on the plus symbol next to a sensor ID, you can display two graphics: the individual measurements for the last 24 hours and the 24 hours floating mean for the last seven days. For technical reasons, the first of the 8 days displayed on the graphic has to stay empty.\
 The values are refreshed every 5 minutes in order to fit with the measurement frequency of the Airrohr sensors.</p> \
-<p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>");
-	d3.select('#betterplace').innerHTML="<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>";
+<p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>"));
+	d3.select('#betterplace').html("<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>");
 
-	var custom_select = document.getElementById('custom-select');
-	var select_options = custom_select.getElementsByTagName('select')[0].getElementsByTagName('option');
-	for (var i=0; i < select_options.length; i++) {
-		select_options[i].innerHTML = translate.tr(lang, select_options[i].innerHTML);
-	}
+	d3.select("#custom-select").select("select").selectAll("option").each(function(d,i) {
+		d3.select(this).text(translate.tr(lang,d3.select(this).text()));
+	});
 
-	map.setView(cooCenter, zoomLevel);
+	d3.select("#custom-select").style("display","inline-block");
+
+	map.setView(coordsCenter, zoomLevel);
 	
 	map.clicked = 0;
 	
-	selector1 = document.getElementById('custom-select').getElementsByTagName('select')[0].value;
+	d3.select("#custom-select").select("select").property("value", config.selection);
+
+	selector1 = config.selection;
 
 	console_log(selector1);
 
@@ -236,21 +240,17 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 	});
 };
 
-map = L.map('map',{ zoomControl:true,minZoom:1,doubleClickZoom:false});
+map = L.map('map',{ zoomControl:true,minZoom:config.minZoom,maxZoom:config.maxZoom,doubleClickZoom:false});
 
 new L.Hash(map);
 
-tiles = L.tileLayer('https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png',{
-			attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-			maxZoom: 16}).addTo(map);
+tiles = L.tileLayer(config.tiles,{
+			attribution: config.attribution,
+			maxZoom: config.maxZoom, minZoom: config.minZoom}).addTo(map);
 
 function switch_legend(val) {
-	var legends = document.getElementById('legendcontainer').querySelectorAll("[id^=legend_]");
-	console_log(legends);
-	for (var i=0; i < legends.length; i++) {
-		legends[i].style.display = 'none';
-	}
-	document.getElementById('legend_'+val).style.display='block';
+	d3.select('#legendcontainer').selectAll("[id^=legend_]").style("display","none");
+	d3.select('#legend_'+val).style("display","block");
 }
 
 function isNumber(obj) {
@@ -326,23 +326,20 @@ function ready(data,num) {
 //	var dateFormater = locale.format("%A, %d. %B %Y, um %H:%M:%S");
 	var dateFormater = locale.format("%H:%M:%S");
 
-	document.getElementById('update').innerHTML = translate.tr(lang,"Last update")+": " + dateFormater(newTime);
-
-//	document.getElementById('update').innerHTML = "Last update: " + data[0][0].timestamp;
+	d3.select("#update").html(translate.tr(lang,"Last update")+": " + dateFormater(newTime));
 	
 	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return check_values(value.data[selector1]);}));};
 	if(num == 2 && selector1 == "Official_AQI_US"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_AQI);};
 	if(num == 3 && (selector1 == "Temperature" || selector1 == "Humidity" || selector1 == "Pressure" )){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[selector1]);}));};
 
-	document.getElementById('loading').style.display='none';
+	d3.select("#loading").style("display","none");
 
 };
 
 function reload(val){
 	d3.selectAll('path.hexbin-hexagon').remove();
 	d3.select("#results").remove();
-	sidebar = d3.select('#sidebar');
-	sidebar.style.display='none';
+	d3.select("#sidebar").style("display","none");
 
 	console_log(val);
 
@@ -415,35 +412,32 @@ function interpolColor(a, b, amount) {
 function close_sidebar() {
 	var x = d3.select("#sidebar");
 
-	if (x.style.display === "block") {
-		x.style.display = "none";
+	if (x.style("display") === "block") {
+		x.style("display", "none");
 		if(!d3.select("#results").empty()){
 			d3.select("#results").remove();
 		};
 	} else {
-		x.style.display = "block";
+		x.style("display", "block");
 	};
 }
 
 //var menu = d3.select("#menu");
-//menu.addEventListener("click", close_sidebar);
 d3.select("#menu").on("click", close_sidebar);
 
 //var close_link = d3.select("#close");
-//close_link.addEventListener("click", close_sidebar);
 d3.select("#close").on("click", close_sidebar);
 
-var erkl = d3.select("#explanation");
-erkl.on("click", function(e) {
+d3.select("#explanation").on("click", function(e) {
 
-	var x = document.getElementById("map-info");
-
-	if (x.style.display === "none") {
-		x.style.display = "block";
-		d3.select("explanation").innerHTML = translate.tr(lang,"Hide explanation");
+	var x = d3.select("#map-info");
+	
+	if ( x.style("display") === "none" ) {
+		x.style("display", "block");
+		d3.select("#explanation").html(translate.tr(lang,"Hide explanation"));
 	} else {
-		x.style.display = "none";
-		d3.select("explanation").innerHTML = translate.tr(lang,"Show explanation");
+		x.style("display", "none");
+		d3.select("#explanation").html(translate.tr(lang,"Show explanation"));
 	};
 });
 
@@ -702,8 +696,8 @@ function sensorNr(data){
 	};
 
 	var x = d3.select("#sidebar");
-	if (x.style.display = "none") {
-		x.style.display = "block";
+	if (x.style("display") === "none") {
+		x.style("display", "block");
 	};
 
 	var textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>"+translate.tr(lang,'Sensor')+"</th><th class = 'title'>"+translate.tr(lang,titles[selector1])+"</th></tr>";
@@ -712,7 +706,7 @@ function sensorNr(data){
 	}
 	var sensors = '';
 	data.forEach(function(i) {
-		sensors += "<tr><td class='idsens' value="+i.o.id+">"+inner_pre+i.o.id+"</td>";
+		sensors += "<tr><td class='idsens' id='id_"+i.o.id+"'>"+inner_pre+i.o.id+"</td>";
 		if (selector1 == "PM10"){
 			sensors += "<td>"+i.o.data[selector1]+"</td></tr>";
 		};
@@ -745,7 +739,7 @@ function sensorNr(data){
 		.style("padding","10px")
 
 	d3.selectAll(".idsens").on("click", function() {
-		displayGraph(d3.select(this).attr("value"));
+		displayGraph(d3.select(this).attr("id"));
 	});
 
 };
@@ -788,9 +782,10 @@ function formula(Ih,Il,Ch,Cl,C){
 
 };
 
-function displayGraph(sens) {
+function displayGraph(id) {
 
 	var inner_pre = "";
+	var sens = id.substr(3);
 
 	if (!openedGraph1.includes(sens)) {
 
@@ -800,7 +795,7 @@ function displayGraph(sens) {
 
 		var iddiv = "#graph_"+sens;
 
-		var td = d3.select(iddiv).append("td")
+		d3.select(iddiv).append("td")
 				.attr("id", "frame_"+sens)
 				.attr("colspan", "2")
 				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId="+panelIDs[selector1][0]+"&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId="+panelIDs[selector1][1]+"&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
@@ -808,12 +803,12 @@ function displayGraph(sens) {
 		if (selector1 != "Official_AQI_US") {
 			inner_pre = "(-) ";
 		}
-		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML = inner_pre+"#"+sens;
+		d3.select("#id_"+sens).html(inner_pre+"#"+sens);
 	} else {
 		if (selector1 != "Official_AQI_US") {
 			inner_pre = "(+) ";
 		}
-		document.querySelectorAll("td.idsens[value='"+sens+"']")[0].innerHTML = inner_pre+"#"+sens;
+		d3.select("#id_"+sens).html(inner_pre+"#"+sens);
 		removeTd(sens);
 	};
 
@@ -840,19 +835,20 @@ function removeInArray(array) {
 			array.splice(ax, 1);
 		}
 	}
-
-//	console_log(array);
-
 	return array;
 }
 
 //SELECT
 
 var x, i, j, selElmnt, a, b, c;
+console_log("test");
+d3.select("#custom-select").select("select").property("value", config.selection);
 /*look for any elements with the class "custom-select":*/
 x = document.getElementById("custom-select");
 selElmnt = x.getElementsByTagName("select")[0];
 selector1 = selElmnt.value;
+console_log(selElmnt.value);
+console_log(selElmnt.selectedIndex);
 /*for each element, create a new DIV that will act as the selected item:*/
 a = document.createElement("DIV");
 a.setAttribute("class", "select-selected");

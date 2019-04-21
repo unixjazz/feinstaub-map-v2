@@ -286,6 +286,7 @@ li {
 
 .tooltip div {
 	display:none;
+	pointer-events: auto;
 }
 
 .tooltip:hover div {
