@@ -256,7 +256,7 @@ body {
 	background: linear-gradient(to top, #dd2e97 0%,#6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
 }
 
-#legend_Official_AQI_US span {
+#legend_Official_AQI_US .AQI_color {
 	display: inline-block;
 	width: 15px;
 	height: 15px;
@@ -274,9 +274,9 @@ body {
 li {
 	display: list-item;
 	text-align: -webkit-match-parent;
+	width: 100%;
 	pointer-events: auto;
 }
-
 
 .tooltip {
 	text-decoration:none;
@@ -284,23 +284,29 @@ li {
     cursor:pointer;
 }
 
-.tooltip div {
+.tooltip-text {
+}
+
+.tooltip-text div {
 	display:none;
 	pointer-events: auto;
 }
 
-.tooltip:hover div {
-	display:block;
-	position:fixed;
+.tooltip-text:hover div {
+	display:inline;
+	position:absolute;
+	bottom:0px;
 	overflow:hidden;
 	background-color: rgba(56, 181, 173, 1);
 	z-index:1000;
+	margin-left: 5px;
 }
 
 .tooltip-div {
 	padding: 5px;
 	border-radius: 5px;
 	width:auto;
+	min-width: 200px;
 	max-width: 500px;
 	height:auto;
 }

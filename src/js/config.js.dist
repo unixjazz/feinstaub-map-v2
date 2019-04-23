@@ -3,7 +3,9 @@ module.exports = {
 	"zoom" : 2,
 	"minZoom": 2,
 	"maxZoom": 16,
+	// phenomenon shown at start, possible values: PM10, PM25, Official_AQI_US, Temperature, Humidity, Pressure
 	"selection": "PM10",
+	// Tiles
 	"tiles": "https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png",
 	"attribution": "Map data © <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors"
 }

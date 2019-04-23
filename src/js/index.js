@@ -36,11 +36,15 @@ var tiles;
 
 var selector1 = config.selection;
 
-var lang = 	lang = translate.getFirstBrowserLanguage().substring(0,2);
+var lang = translate.getFirstBrowserLanguage().substring(0,2);
 
 var openedGraph1 = [];
 
 var is_click;
+
+var click_inside_select = false;
+
+var query={};
 
 var locale = d3.timeFormatLocale({
 	"dateTime": "%Y.%m.%d %H:%M:%S",
@@ -97,38 +101,26 @@ var panelIDs = {
 					"Pressure": [8,7]
 }
 
-
-var div = d3.select("#sidebar").append("div")
-				.attr("id", "table")
-				.style("display", "none");
-
-var tooltipDiv = document.getElementsByClassName('tooltip-div');
+var div = d3.select("#sidebar").append("div").attr("id", "table").style("display", "none");
 
 function console_log(text) {
 	console.log(text);
 }
 
-window.onmousemove = function (e) {
-	var x = e.clientX,
-	y = e.clientY;
-
-	for (var i = 0; i < tooltipDiv.length; i++) {
-		tooltipDiv.item(i).style.top = (y - 10 )+ 'px';
-		tooltipDiv.item(i).style.left = (x + 20) + 'px';
-	};
-};
-
-var i=0;
-var telem;
-var search_values=location.search.replace('\?','').split('&');
-var query={}
-for(i=0;i<search_values.length;i++){
-    telem=search_values[i].split('=');
-    query[telem[0]]='';
-    if (typeof telem[1] != 'undefined') {
-		query[telem[0]]=telem[1];
+function get_query_vars() {
+	var i=0;
+	var telem;
+	var search_values=location.search.replace('\?','').split('&');
+	for(i=0;i<search_values.length;i++) {
+		telem=search_values[i].split('=');
+		query[telem[0]]='';
+		if (typeof telem[1] != 'undefined') {
+			query[telem[0]]=telem[1];
+		}
 	}
 }
+
+get_query_vars();
 
 console_log("Query No overlay: "+query.nooverlay);
 if (typeof query.nooverlay !== "undefined") {
@@ -137,8 +129,6 @@ if (typeof query.nooverlay !== "undefined") {
 	d3.select("#betterplace").style("display", "inline-block");
 }
 
-//var coordsCenter = [50.495171, 9.730827];
-//var zoomLevel = 6;
 var coordsCenter = config.center;
 var zoomLevel = config.zoom;
 
@@ -183,6 +173,8 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 	});
 
 	d3.select("#custom-select").style("display","inline-block");
+	d3.select("#custom-select").select("select").property("value", config.selection);
+	d3.select("#custom-select").append("div").attr("class","select-selected").html(translate.tr(lang,d3.select("#custom-select").select("select").select("option:checked").text())).on("click",showAllSelect);
 
 	map.setView(coordsCenter, zoomLevel);
 	
@@ -244,9 +236,11 @@ map = L.map('map',{ zoomControl:true,minZoom:config.minZoom,maxZoom:config.maxZo
 
 new L.Hash(map);
 
-tiles = L.tileLayer(config.tiles,{
-			attribution: config.attribution,
-			maxZoom: config.maxZoom, minZoom: config.minZoom}).addTo(map);
+tiles = L.tileLayer(config.tiles, {
+				attribution: config.attribution,
+				maxZoom: config.maxZoom,
+				minZoom: config.minZoom
+			}).addTo(map);
 
 function switch_legend(val) {
 	d3.select('#legendcontainer').selectAll("[id^=legend_]").style("display","none");
@@ -356,13 +350,6 @@ function reload(val){
 	} else if (val == "Temperature" || val == "Humidity" || val == "Pressure") {
 		hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[val]);}));
 	}
-
-	if (sidebar.style.display === "block") {
-		sidebar.style.display = "none";
-		if(!d3.select("#results").empty()){
-			d3.select("#results").remove();
-		};
-	};
 };
 
 function getRightValue(array,type){
@@ -680,7 +667,6 @@ L.hexbinLayer = function(options) {
 	return new L.HexbinLayer(options);
 };
 
-
 function sensorNr(data){
 
 	var inner_pre = "#";
@@ -838,132 +824,34 @@ function removeInArray(array) {
 	return array;
 }
 
-//SELECT
-
-var x, i, j, selElmnt, a, b, c;
-console_log("test");
-d3.select("#custom-select").select("select").property("value", config.selection);
-/*look for any elements with the class "custom-select":*/
-x = document.getElementById("custom-select");
-selElmnt = x.getElementsByTagName("select")[0];
-selector1 = selElmnt.value;
-console_log(selElmnt.value);
-console_log(selElmnt.selectedIndex);
-/*for each element, create a new DIV that will act as the selected item:*/
-a = document.createElement("DIV");
-a.setAttribute("class", "select-selected");
-a.innerHTML = translate.tr(lang,selElmnt.options[selElmnt.selectedIndex].innerHTML);
-x.appendChild(a);
-/*for each element, create a new DIV that will contain the option list:*/
-b = document.createElement("DIV");
-b.setAttribute("class", "select-items select-hide");
-
-for (j = 0; j < selElmnt.length; j++) {
-	if (selElmnt.options[j].value != selector1){
-
-		/*for each option in the original select element,
-		create a new DIV that will act as an option item:*/
-		c = document.createElement("DIV");
-		c.innerHTML = translate.tr(lang,selElmnt.options[j].innerHTML);
-		c.addEventListener("click", function(e) {
-			/*when an item is clicked, update the original select box,
-			and the selected item:*/
-			var y, i, k, s, h;
-			s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-			h = this.parentNode.previousSibling;
-			for (i = 0; i < s.length; i++) {
-				if (s.options[i].innerHTML == this.innerHTML) {
-
-					reload(s.options[i].value);
-					s.selectedIndex = i;
-					h.innerHTML = this.innerHTML;
-
-//					console_log(h.value);
-//					console_log(this.innerHTML);
-//
-//					y = this.parentNode.getElementsByClassName("same-as-selected");
-//					for (k = 0; k < y.length; k++) {
-//						y[k].removeAttribute("class");
-//					}
-//					this.setAttribute("class", "same-as-selected");
-					break;
-				}
+function showAllSelect() {
+	click_inside_select = true;
+	if (d3.select("#custom-select").select(".select-items").empty()) {
+		d3.select("#custom-select").append("div").attr("class","select-items");
+		d3.select("#custom-select").select("select").selectAll("option").each(function(d,i) {
+			if (this.value != selector1) {
+				d3.select("#custom-select").select(".select-items").append("div").text(this.text).attr("id","select-item-"+this.value).on("click",function(){ switchTo(this);});
 			}
-			h.click();
 		});
-		b.appendChild(c);
+		d3.select("#custom-select").select(".select-selected").attr("class","select-selected select-arrow-active");
 	}
 }
 
-x.appendChild(b);
-a.addEventListener("click", function(e) {
-	/*when the select box is clicked, close any other select boxes,
-	and open/close the current select box:*/
-	e.stopPropagation();
-	closeAllSelect(this);
-	this.nextSibling.classList.toggle("select-hide");
-	this.classList.toggle("select-arrow-active");
-});
-
-function closeAllSelect(elmnt) {
-	/*a function that will close all select boxes in the document,
-	except the current select box:*/
-	var x, y,z, i, arrNo = [],selElmnt;
-	x = document.getElementsByClassName("select-items");
-	y = document.getElementsByClassName("select-selected");
-	z = document.getElementsByClassName("same-as-selected");
-	selElmnt = document.getElementsByTagName("select")[0];
-	for (i = 0; i < y.length; i++) {
-		if (elmnt == y[i]) {
-			arrNo.push(i)
-			var element = x[0];
-			while (element.firstChild) {
-				element.removeChild(element.firstChild);
-			};
-
-			for (j = 0; j < selElmnt.length; j++) {
-
-				if (selElmnt.options[j].value != selector1){
-
-					/*for each option in the original select element,
-					create a new DIV that will act as an option item:*/
-					c = document.createElement("DIV");
-					c.innerHTML = selElmnt.options[j].innerHTML;
-					c.addEventListener("click", function(e) {
-						/*when an item is clicked, update the original select box,
-						and the selected item:*/
-						var y, i, k, s, h;
-						s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-						h = this.parentNode.previousSibling;
-						for (i = 0; i < s.length; i++) {
-							if (s.options[i].innerHTML == this.innerHTML) {
-
-								reload(s.options[i].value);
-								s.selectedIndex = i;
-								h.innerHTML = this.innerHTML;
-//								y = this.parentNode.getElementsByClassName("same-as-selected");
-//								for (k = 0; k < y.length; k++) {
-//									y[k].removeAttribute("class");
-//								}
-//								this.setAttribute("class", "same-as-selected");
-								break;
-							}
-						}
-						h.click();
-					});
-					b.appendChild(c);
-				}
-			}
-		} else {
-			y[i].classList.remove("select-arrow-active");
-		}
-	}
-	for (i = 0; i < x.length; i++) {
-		if (arrNo.indexOf(i)) {
-			x[i].classList.add("select-hide");
-		}
-	}
+function switchTo(element) {
+	d3.select("#custom-select").select("select").property("value", element.id.substring(12));
+	d3.select("#custom-select").select(".select-selected").text(d3.select("#custom-select").select("select").select("option:checked").text());
+	selector1=element.id.substring(12);
+	reload(selector1);
+	d3.select("#custom-select").select(".select-items").remove();
 }
+
 /*if the user clicks anywhere outside the select box,
 then close all select boxes:*/
-document.addEventListener("click", closeAllSelect);
+document.addEventListener("click", function() {
+	if (! click_inside_select) {
+		d3.select("#custom-select").select(".select-items").remove();
+	} else {
+		click_inside_select = false;
+	}
+});
+
