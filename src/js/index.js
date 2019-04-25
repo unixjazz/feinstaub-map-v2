@@ -31,9 +31,6 @@ var hmhexaPM_aktuell;
 var hmhexaPM_AQI;
 var hmhexa_t_h_p;
 
-var map;
-var tiles;
-
 var selector1 = config.selection;
 
 var lang = translate.getFirstBrowserLanguage().substring(0,2);
@@ -62,7 +59,7 @@ var scale_options = {
 								valueDomain: [20, 40, 60, 100, 500],
 								colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 							},
-				"PM25":	{
+				"PM25":		{
 								valueDomain: [10, 20, 40, 60, 100],
 								colorRange: ['#00796B', '#F9A825', '#E65100', '#DD2C00', '#960084']	
 							},
@@ -102,6 +99,16 @@ var panelIDs = {
 }
 
 var div = d3.select("#sidebar").append("div").attr("id", "table").style("display", "none");
+
+var map = L.map('map',{ zoomControl:true,minZoom:config.minZoom,maxZoom:config.maxZoom,doubleClickZoom:false});
+
+var tiles = L.tileLayer(config.tiles, {
+				attribution: config.attribution,
+				maxZoom: config.maxZoom,
+				minZoom: config.minZoom
+			}).addTo(map);
+
+new L.Hash(map);
 
 function console_log(text) {
 	console.log(text);
@@ -156,8 +163,239 @@ if (location.hash) {
 
 window.onload=function(){
 
+//	HEXBINS
+
+	L.HexbinLayer = L.Layer.extend({
+		_undef (a) { return typeof a === 'undefined' },
+		options: {
+			radius: 25,
+			opacity: 0.6,
+			duration: 200,
+			onmouseover: undefined,
+			onmouseout: undefined,
+
+//			REVOIR LE DOUBLECLIQUE
+
+			click: 	function(e) {
+						d3.timeout(function() {
+							if(map.clicked == 1){
+								sensorNr(e);
+							}
+						}, 300)},
+
+			lng: function (d) {
+				return d.longitude
+			},
+			lat: function (d) {
+				return d.latitude
+			},
+			value: function (d) {
+//				Median everywhere!
+				return d3.median(d, (o) => o.o.data[selector1]);
+			}
+		},
+
+		initialize (options) {
+			L.setOptions(this, options)
+			this._data = []
+			this._colorScale = d3.scaleLinear()
+				.domain(this.options.valueDomain)
+				.range(this.options.colorRange)
+				.clamp(true)
+		},
+
+//		Make hex radius dynamic for different zoom levels to give a nicer overview of the sensors as well as making sure that the hex grid does not cover the whole world when zooming out
+		getFlexRadius () {
+			if (this.map.getZoom() < 3) {
+				return this.options.radius / (3 * (4 - this.map.getZoom()))
+			} else if (this.map.getZoom() > 2 && this.map.getZoom() < 8) {
+				return this.options.radius / (9 - this.map.getZoom())
+			} else {
+				return this.options.radius
+			}
+		},
+
+		onAdd (map) {
+			this.map = map
+			let _layer = this
+
+			// SVG element
+			this._svg = L.svg()
+			map.addLayer(this._svg)
+			this._rootGroup = d3.select(this._svg._rootGroup).classed('d3-overlay', true)
+			this.selection = this._rootGroup
+
+			// Init shift/scale invariance helper values
+			this._pixelOrigin = map.getPixelOrigin()
+			this._wgsOrigin = L.latLng([0, 0])
+			this._wgsInitialShift = this.map.latLngToLayerPoint(this._wgsOrigin)
+			this._zoom = this.map.getZoom()
+			this._shift = L.point(0, 0)
+			this._scale = 1
+
+			// Create projection object
+			this.projection = {
+				latLngToLayerPoint: function (latLng, zoom) {
+					zoom = _layer._undef(zoom) ? _layer._zoom : zoom
+					let projectedPoint = _layer.map.project(L.latLng(latLng), zoom)._round()
+					return projectedPoint._subtract(_layer._pixelOrigin)
+				},
+				layerPointToLatLng: function (point, zoom) {
+					zoom = _layer._undef(zoom) ? _layer._zoom : zoom
+					let projectedPoint = L.point(point).add(_layer._pixelOrigin)
+					return _layer.map.unproject(projectedPoint, zoom)
+				},
+				unitsPerMeter: 256 * Math.pow(2, _layer._zoom) / 40075017,
+				map: _layer.map,
+				layer: _layer,
+				scale: 1
+			}
+			this.projection._projectPoint = function (x, y) {
+				let point = _layer.projection.latLngToLayerPoint(new L.LatLng(y, x))
+				this.stream.point(point.x, point.y)
+			}
+
+			this.projection.pathFromGeojson = d3.geoPath().projection(d3.geoTransform({point: this.projection._projectPoint}))
+
+			// Compatibility with v.1
+			this.projection.latLngToLayerFloatPoint = this.projection.latLngToLayerPoint
+			this.projection.getZoom = this.map.getZoom.bind(this.map)
+			this.projection.getBounds = this.map.getBounds.bind(this.map)
+			this.selection = this._rootGroup // ???
+
+			// Initial draw
+			this.draw()
+		},
+
+		onRemove (map) {
+			if (this._container != null) this._container.remove()
+
+			// Remove events
+			map.off({'moveend': this._redraw}, this)
+
+			this._container = null
+			this._map = null
+
+			// Explicitly will leave the data array alone in case the layer will be shown again
+			// this._data = [];
+		},
+
+		addTo (map) {
+			map.addLayer(this)
+			return this
+		},
+
+		_disableLeafletRounding () {
+			this._leaflet_round = L.Point.prototype._round
+			L.Point.prototype._round = function () { return this }
+		},
+
+		_enableLeafletRounding () {
+			L.Point.prototype._round = this._leaflet_round
+		},
+
+		draw () {
+			this._disableLeafletRounding()
+			this._redraw(this.selection, this.projection, this.map.getZoom())
+			this._enableLeafletRounding()
+		},
+		getEvents: function () { return {zoomend: this._zoomChange} },
+
+		_zoomChange: function () {
+			let mapZoom = map.getZoom()
+			let MapCenter = map.getCenter()
+			this._disableLeafletRounding()
+			let newZoom = this._undef(mapZoom) ? this.map._zoom : mapZoom
+			this._zoomDiff = newZoom - this._zoom
+			this._scale = Math.pow(2, this._zoomDiff)
+			this.projection.scale = this._scale
+			this._shift = this.map.latLngToLayerPoint(this._wgsOrigin)
+						._subtract(this._wgsInitialShift.multiplyBy(this._scale))
+			let shift = ["translate(", this._shift.x, ",", this._shift.y, ") "]
+			let scale = ["scale(", this._scale, ",", this._scale,") "]
+			this._rootGroup.attr("transform", shift.concat(scale).join(""))
+			this.draw()
+			this._enableLeafletRounding()
+		},
+		_redraw(selection, projection, zoom){
+			// Generate the mapped version of the data
+			let data = this._data.map( (d) => {
+				let lng = this.options.lng(d)
+				let lat = this.options.lat(d)
+				let point = projection.latLngToLayerPoint([lat, lng])
+				return { o: d, point: point }
+			});
+
+			// Select the hex group for the current zoom level. This has
+			// the effect of recreating the group if the zoom level has changed
+			let join = selection.selectAll('g.hexbin')
+				.data([zoom], (d) => d)
+
+			// enter
+			join.enter().append('g')
+				.attr('class', (d) => 'hexbin zoom-' + d)
+
+			// exit
+			join.exit().remove()
+
+			// add the hexagons to the select
+			this._createHexagons(join, data, projection)
+
+		},
+
+		_createHexagons(g, data, projection) {
+			// Create the bins using the hexbin layout
+
+			let hexbin = d3.hexbin()
+				.radius(this.getFlexRadius() / projection.scale)
+				.x( (d) => d.point.x )
+				.y( (d) => d.point.y )
+			let bins = hexbin(data)
+
+//			console_log(bins)
+
+			// Join - Join the Hexagons to the data
+			let join = g.selectAll('path.hexbin-hexagon')
+				.data(bins)
+
+			// Update - set the fill and opacity on a transition (opacity is re-applied in case the enter transition was cancelled)
+			join.transition().duration(this.options.duration)
+				.attr('fill', (d) => this._colorScale(this.options.value(d)))
+				.attr('fill-opacity', this.options.opacity)
+				.attr('stroke-opacity', this.options.opacity)
+
+			// Enter - establish the path, the fill, and the initial opacity
+			join.enter().append('path').attr('class', 'hexbin-hexagon')
+				.attr('d', (d) => 'M' + d.x + ',' + d.y + hexbin.hexagon())
+				.attr('fill', (d) => this._colorScale(this.options.value(d)))
+				.attr('fill-opacity', 0.01)
+				.attr('stroke-opacity', 0.01)
+				.on('mouseover', this.options.mouseover)
+				.on('mouseout', this.options.mouseout)
+				.on('click', this.options.click)
+				.transition().duration(this.options.duration)
+					.attr('fill-opacity', this.options.opacity)
+					.attr('stroke-opacity', this.options.opacity)
+
+			// Exit
+			join.exit()
+				.transition().duration(this.options.duration)
+				.attr('fill-opacity', 0.01)
+				.attr('stroke-opacity', 0.01)
+				.remove()
+		},
+		data (data) {
+			this._data = (data != null) ? data : []
+			this.draw()
+			return this
+		}
+	});
+
+	L.hexbinLayer = function(options) {
+		return new L.HexbinLayer(options);
+	};
+
 	// enable elements
-	d3.select('#custom-select').style("display", "inline-block");
 	d3.select('#legend_PM10').style("display", "block");
 	d3.select('#close').html(translate.tr(lang,'(close)'));
 	d3.select('#explanation').html(translate.tr(lang,'Show explanation'));
@@ -168,27 +406,28 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 <p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>"));
 	d3.select('#betterplace').html("<a title='"+translate.tr(lang,"Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org")+" target='_blank' href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/'>"+translate.tr(lang,"Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>")+"</a>");
 
-	d3.select("#custom-select").select("select").selectAll("option").each(function(d,i) {
+	d3.select("#menu").on("click", closeSidebar);
+	d3.select("#close").on("click", closeSidebar);
+	d3.select("#explanation").on("click", switchExplanation);
+
+	//	Select
+	var custom_select = d3.select("#custom-select");
+	custom_select.select("select").selectAll("option").each(function(d,i) {
 		d3.select(this).text(translate.tr(lang,d3.select(this).text()));
 	});
-
-	d3.select("#custom-select").style("display","inline-block");
-	d3.select("#custom-select").select("select").property("value", config.selection);
-	d3.select("#custom-select").append("div").attr("class","select-selected").html(translate.tr(lang,d3.select("#custom-select").select("select").select("option:checked").text())).on("click",showAllSelect);
+	custom_select.select("select").property("value", config.selection);
+	custom_select.append("div").attr("class","select-selected").html(translate.tr(lang,d3.select("#custom-select").select("select").select("option:checked").text())).on("click",showAllSelect);
+	custom_select.style("display", "inline-block");
+	selector1 = config.selection;
+	switchLegend(selector1);
+	console_log(selector1);
 
 	map.setView(coordsCenter, zoomLevel);
 	
 	map.clicked = 0;
 	
-	d3.select("#custom-select").select("select").property("value", config.selection);
-
-	selector1 = config.selection;
-
-	console_log(selector1);
-
 	hexagonheatmap = L.hexbinLayer(scale_options[selector1]).addTo(map);
 
-	switch_legend(selector1);	
 
 //	REVOIR ORDRE DANS FONCTION READY
 
@@ -232,28 +471,14 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 	});
 };
 
-map = L.map('map',{ zoomControl:true,minZoom:config.minZoom,maxZoom:config.maxZoom,doubleClickZoom:false});
-
-new L.Hash(map);
-
-tiles = L.tileLayer(config.tiles, {
-				attribution: config.attribution,
-				maxZoom: config.maxZoom,
-				minZoom: config.minZoom
-			}).addTo(map);
-
-function switch_legend(val) {
+function switchLegend(val) {
 	d3.select('#legendcontainer').selectAll("[id^=legend_]").style("display","none");
 	d3.select('#legend_'+val).style("display","block");
 }
 
-function isNumber(obj) {
-	return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);
-}
-
-function check_values(obj) {
+function checkValues(obj) {
 	var result = false;
-	if (isNumber(obj)) {
+	if (obj !== undefined && typeof(obj) === 'number' && !isNaN(obj)) {
 		if ((selector1 == "Humidity") && (obj >=0 ) && (obj <= 100)) { result = true; }
 		else if ((selector1 == "Temperature") && (obj <= 70 && obj >= -50)) { result = true; }
 		else if ((selector1 == "Pressure") && (obj >= 850) && (obj < 1200)) { result = true; }
@@ -322,9 +547,9 @@ function ready(data,num) {
 
 	d3.select("#update").html(translate.tr(lang,"Last update")+": " + dateFormater(newTime));
 	
-	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return check_values(value.data[selector1]);}));};
+	if(num == 1 && (selector1 == "PM10" || selector1 == "PM25")) {hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return checkValues(value.data[selector1]);}));};
 	if(num == 2 && selector1 == "Official_AQI_US"){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexaPM_AQI);};
-	if(num == 3 && (selector1 == "Temperature" || selector1 == "Humidity" || selector1 == "Pressure" )){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[selector1]);}));};
+	if(num == 3 && (selector1 == "Temperature" || selector1 == "Humidity" || selector1 == "Pressure" )){hexagonheatmap.initialize(scale_options[selector1]);hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return checkValues(value.data[selector1]);}));};
 
 	d3.select("#loading").style("display","none");
 
@@ -339,16 +564,16 @@ function reload(val){
 
 	selector1 = val;
 	
-	switch_legend(selector1);
+	switchLegend(selector1);
 
 	hexagonheatmap.initialize(scale_options[selector1]);
 
 	if (val == "PM10" || val == "PM25") {
-		hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return check_values(value.data[val]);}));
+		hexagonheatmap.data(hmhexaPM_aktuell.filter(function(value){return checkValues(value.data[val]);}));
 	} else if (val == "Official_AQI_US") {
 		hexagonheatmap.data(hmhexaPM_AQI);
 	} else if (val == "Temperature" || val == "Humidity" || val == "Pressure") {
-		hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return check_values(value.data[val]);}));
+		hexagonheatmap.data(hmhexa_t_h_p.filter(function(value){return checkValues(value.data[val]);}));
 	}
 };
 
@@ -396,7 +621,7 @@ function interpolColor(a, b, amount) {
 
 //MENU
 
-function close_sidebar() {
+function closeSidebar() {
 	var x = d3.select("#sidebar");
 
 	if (x.style("display") === "block") {
@@ -409,14 +634,7 @@ function close_sidebar() {
 	};
 }
 
-//var menu = d3.select("#menu");
-d3.select("#menu").on("click", close_sidebar);
-
-//var close_link = d3.select("#close");
-d3.select("#close").on("click", close_sidebar);
-
-d3.select("#explanation").on("click", function(e) {
-
+function switchExplanation() {
 	var x = d3.select("#map-info");
 	
 	if ( x.style("display") === "none" ) {
@@ -426,246 +644,7 @@ d3.select("#explanation").on("click", function(e) {
 		x.style("display", "none");
 		d3.select("#explanation").html(translate.tr(lang,"Show explanation"));
 	};
-});
-
-//HEXBINS
-
-L.HexbinLayer = L.Layer.extend({
-	_undef (a) { return typeof a === 'undefined' },
-	options: {
-		radius: 25,
-		opacity: 0.6,
-		duration: 200,
-		onmouseover: undefined,
-		onmouseout: undefined,
-
-//		REVOIR LE DOUBLECLIQUE
-
-		click: 	function(e) {
-					d3.timeout(function() {
-						if(map.clicked == 1){
-							sensorNr(e);
-						}
-					}, 300)},
-
-		lng: function (d) {
-			return d.longitude
-		},
-		lat: function (d) {
-			return d.latitude
-		},
-		value: function (d) {
-
-//			Median everywhere!
-			return d3.median(d, (o) => o.o.data[selector1]);
-
-		}
-	},
-
-	initialize (options) {
-		L.setOptions(this, options)
-		this._data = []
-		this._colorScale = d3.scaleLinear()
-			.domain(this.options.valueDomain)
-			.range(this.options.colorRange)
-			.clamp(true)
-	},
-
-//	Make hex radius dynamic for different zoom levels to give a nicer overview of the sensors as well as making sure that the hex grid does not cover the whole world when zooming out
-	getFlexRadius () {
-		if (this.map.getZoom() < 3) {
-			return this.options.radius / (3 * (4 - this.map.getZoom()))
-		} else if (this.map.getZoom() > 2 && this.map.getZoom() < 8) {
-			return this.options.radius / (9 - this.map.getZoom())
-		} else {
-			return this.options.radius
-		}
-	},
-
-	onAdd (map) {
-		this.map = map
-		let _layer = this
-
-		// SVG element
-		this._svg = L.svg()
-		map.addLayer(this._svg)
-		this._rootGroup = d3.select(this._svg._rootGroup).classed('d3-overlay', true)
-		this.selection = this._rootGroup
-
-		// Init shift/scale invariance helper values
-		this._pixelOrigin = map.getPixelOrigin()
-		this._wgsOrigin = L.latLng([0, 0])
-		this._wgsInitialShift = this.map.latLngToLayerPoint(this._wgsOrigin)
-		this._zoom = this.map.getZoom()
-		this._shift = L.point(0, 0)
-		this._scale = 1
-
-		// Create projection object
-		this.projection = {
-			latLngToLayerPoint: function (latLng, zoom) {
-				zoom = _layer._undef(zoom) ? _layer._zoom : zoom
-				let projectedPoint = _layer.map.project(L.latLng(latLng), zoom)._round()
-				return projectedPoint._subtract(_layer._pixelOrigin)
-			},
-			layerPointToLatLng: function (point, zoom) {
-				zoom = _layer._undef(zoom) ? _layer._zoom : zoom
-				let projectedPoint = L.point(point).add(_layer._pixelOrigin)
-				return _layer.map.unproject(projectedPoint, zoom)
-			},
-			unitsPerMeter: 256 * Math.pow(2, _layer._zoom) / 40075017,
-			map: _layer.map,
-			layer: _layer,
-			scale: 1
-		}
-		this.projection._projectPoint = function (x, y) {
-			let point = _layer.projection.latLngToLayerPoint(new L.LatLng(y, x))
-			this.stream.point(point.x, point.y)
-		}
-
-		this.projection.pathFromGeojson = d3.geoPath().projection(d3.geoTransform({point: this.projection._projectPoint}))
-
-		// Compatibility with v.1
-		this.projection.latLngToLayerFloatPoint = this.projection.latLngToLayerPoint
-		this.projection.getZoom = this.map.getZoom.bind(this.map)
-		this.projection.getBounds = this.map.getBounds.bind(this.map)
-		this.selection = this._rootGroup // ???
-
-		// Initial draw
-		this.draw()
-	},
-
-	onRemove (map) {
-		if (this._container != null)
-			this._container.remove()
-
-		// Remove events
-		map.off({'moveend': this._redraw}, this)
-
-		this._container = null
-		this._map = null
-
-		// Explicitly will leave the data array alone in case the layer will be shown again
-		// this._data = [];
-	},
-
-	addTo (map) {
-		map.addLayer(this)
-		return this
-	},
-
-	_disableLeafletRounding () {
-		this._leaflet_round = L.Point.prototype._round
-		L.Point.prototype._round = function () { return this }
-	},
-
-	_enableLeafletRounding () {
-		L.Point.prototype._round = this._leaflet_round
-	},
-
-	draw () {
-		this._disableLeafletRounding()
-		this._redraw(this.selection, this.projection, this.map.getZoom())
-		this._enableLeafletRounding()
-	},
-	getEvents: function () { return {zoomend: this._zoomChange} },
-
-	_zoomChange: function () {
-
-		let mapZoom = map.getZoom()
-		let MapCenter = map.getCenter()
-		this._disableLeafletRounding()
-		let newZoom = this._undef(mapZoom) ? this.map._zoom : mapZoom
-		this._zoomDiff = newZoom - this._zoom
-		this._scale = Math.pow(2, this._zoomDiff)
-		this.projection.scale = this._scale
-		this._shift = this.map.latLngToLayerPoint(this._wgsOrigin)
-				._subtract(this._wgsInitialShift.multiplyBy(this._scale))
-		let shift = ["translate(", this._shift.x, ",", this._shift.y, ") "]
-		let scale = ["scale(", this._scale, ",", this._scale,") "]
-		this._rootGroup.attr("transform", shift.concat(scale).join(""))
-		this.draw()
-		this._enableLeafletRounding()
-	},
-	_redraw(selection, projection, zoom){
-		// Generate the mapped version of the data
-		let data = this._data.map( (d) => {
-			let lng = this.options.lng(d)
-			let lat = this.options.lat(d)
-
-			let point = projection.latLngToLayerPoint([lat, lng])
-			return { o: d, point: point }
-		});
-
-		// Select the hex group for the current zoom level. This has
-		// the effect of recreating the group if the zoom level has changed
-		let join = selection.selectAll('g.hexbin')
-			.data([zoom], (d) => d)
-
-
-		// enter
-		join.enter().append('g')
-			.attr('class', (d) => 'hexbin zoom-' + d)
-
-		// exit
-		join.exit().remove()
-
-
-		// add the hexagons to the select
-		this._createHexagons(join, data, projection)
-
-	},
-
-	_createHexagons(g, data, projection) {
-		// Create the bins using the hexbin layout
-
-		let hexbin = d3.hexbin()
-			.radius(this.getFlexRadius() / projection.scale)
-			.x( (d) => d.point.x )
-			.y( (d) => d.point.y )
-		let bins = hexbin(data)
-
-//		console_log(bins)
-
-		// Join - Join the Hexagons to the data
-		let join = g.selectAll('path.hexbin-hexagon')
-			.data(bins)
-
-
-		// Update - set the fill and opacity on a transition (opacity is re-applied in case the enter transition was cancelled)
-		join.transition().duration(this.options.duration)
-			.attr('fill', (d) => this._colorScale(this.options.value(d)))
-			.attr('fill-opacity', this.options.opacity)
-			.attr('stroke-opacity', this.options.opacity)
-
-		// Enter - establish the path, the fill, and the initial opacity
-		join.enter().append('path').attr('class', 'hexbin-hexagon')
-			.attr('d', (d) => 'M' + d.x + ',' + d.y + hexbin.hexagon())
-			.attr('fill', (d) => this._colorScale(this.options.value(d)))
-			.attr('fill-opacity', 0.01)
-			.attr('stroke-opacity', 0.01)
-			.on('mouseover', this.options.mouseover)
-			.on('mouseout', this.options.mouseout)
-			.on('click', this.options.click)
-			.transition().duration(this.options.duration)
-				.attr('fill-opacity', this.options.opacity)
-				.attr('stroke-opacity', this.options.opacity)
-
-		// Exit
-		join.exit().transition().duration(this.options.duration)
-			.attr('fill-opacity', 0.01)
-			.attr('stroke-opacity', 0.01)
-			.remove()
-	},
-	data (data) {
-		this._data = (data != null) ? data : []
-		this.draw()
-		return this
-	}
-});
-
-L.hexbinLayer = function(options) {
-	return new L.HexbinLayer(options);
-};
+}
 
 function sensorNr(data){
 
@@ -771,6 +750,7 @@ function formula(Ih,Il,Ch,Cl,C){
 function displayGraph(id) {
 
 	var inner_pre = "";
+	var panel_str = "<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=<PANELID>&var-node=<SENSOR>' width='290' height='200' frameborder='0'></iframe>";
 	var sens = id.substr(3);
 
 	if (!openedGraph1.includes(sens)) {
@@ -784,7 +764,7 @@ function displayGraph(id) {
 		d3.select(iddiv).append("td")
 				.attr("id", "frame_"+sens)
 				.attr("colspan", "2")
-				.html("<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId="+panelIDs[selector1][0]+"&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe><br><iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId="+panelIDs[selector1][1]+"&var-node="+sens+"' width='290' height='200' frameborder='0'></iframe>");
+				.html(panel_str.replace("<PANELID>",panelIDs[selector1][0]).replace("<SENSOR>",sens)+"<br>"+panel_str.replace("<PANELID>",panelIDs[selector1][1]).replace("<SENSOR>",sens));
 
 		if (selector1 != "Official_AQI_US") {
 			inner_pre = "(-) ";
@@ -826,23 +806,25 @@ function removeInArray(array) {
 
 function showAllSelect() {
 	click_inside_select = true;
-	if (d3.select("#custom-select").select(".select-items").empty()) {
-		d3.select("#custom-select").append("div").attr("class","select-items");
-		d3.select("#custom-select").select("select").selectAll("option").each(function(d,i) {
+	var custom_select = d3.select("#custom-select");
+	if (custom_select.select(".select-items").empty()) {
+		custom_select.append("div").attr("class","select-items");
+		custom_select.select("select").selectAll("option").each(function(d,i) {
 			if (this.value != selector1) {
-				d3.select("#custom-select").select(".select-items").append("div").text(this.text).attr("id","select-item-"+this.value).on("click",function(){ switchTo(this);});
+				custom_select.select(".select-items").append("div").text(this.text).attr("id","select-item-"+this.value).on("click",function(){ switchTo(this);});
 			}
 		});
-		d3.select("#custom-select").select(".select-selected").attr("class","select-selected select-arrow-active");
+		custom_select.select(".select-selected").attr("class","select-selected select-arrow-active");
 	}
 }
 
 function switchTo(element) {
-	d3.select("#custom-select").select("select").property("value", element.id.substring(12));
-	d3.select("#custom-select").select(".select-selected").text(d3.select("#custom-select").select("select").select("option:checked").text());
+	var custom_select = d3.select("#custom-select");
+	custom_select.select("select").property("value", element.id.substring(12));
+	custom_select.select(".select-selected").text(custom_select.select("select").select("option:checked").text());
 	selector1=element.id.substring(12);
 	reload(selector1);
-	d3.select("#custom-select").select(".select-items").remove();
+	custom_select.select(".select-items").remove();
 }
 
 /*if the user clicks anywhere outside the select box,

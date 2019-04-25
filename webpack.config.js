@@ -1,6 +1,9 @@
 const webpack = require("webpack");
 const path = require("path");
 
+const TerserJSPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -12,13 +15,33 @@ module.exports = {
 
 	// https://webpack.js.org/configuration/dev-server/
 	devServer: {
+		host: '127.0.0.1',
 		port: 8080
+	},
+	optimization: {
+		minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+/*		splitChunks: {
+			cacheGroups: {
+				d3: {
+					test: /[\\/]node_modules[\\/]d3.*[\\/]/,
+					name: 'd3',
+					filename: '[name].bundle.js',
+        			chunks: 'all',
+				},
+				leaflet: {
+					test: /[\\/]node_modules[\\/]leaflet.*[\\/]/,
+					name: 'leaflet',
+					filename: '[name].bundle.js',
+        			chunks: 'all',
+				},
+			}
+		} */
 	},
 	module:{
 		rules:[
 			{
 				test:/\.css$/,
-				use:['style-loader','css-loader']
+				use: [MiniCssExtractPlugin.loader, 'css-loader'],
 			},
 			{
 				test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
@@ -32,9 +55,13 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: './src/index.html',
 			inject: true,
-			chunks: ['index'],
+//			chunks: ['index'],
 			filename: 'index.html'
-		})
+		}),
+		new MiniCssExtractPlugin({
+			filename: '[name].css',
+			chunkFilename: '[name].css',
+		}),
 	],
 	output: {
 		filename: 'main.js',
