@@ -68,12 +68,12 @@ var scale_options = {
 								colorRange: ['#00E400','#FFFF00','#FF7E00','#FF0000','rgb(143, 63, 151)','#7E0023']	
 							},
 				"Temperature": {
-								valueDomain: [-20, 0, 50],
-								colorRange: ['#0022FE', '#FFFFFF', '#FF0000']	
+								valueDomain: [-20, -10, 0, 10, 20, 30, 40],
+								colorRange: ['#4050B0', '#5679f9', '#55cbd9', '#a2cf4a', '#fedb64', '#fe8f52', '#e6380f']	
 							},
 				"Humidity": {
-								valueDomain: [0,100],
-								colorRange: ['#FFFFFF', '#0000FF']	
+								valueDomain: [0, 20, 40, 60, 80, 100],
+								colorRange: ['#c41a0a', '#f47a0b', '#f4e60b', '#aff474', '#6dbcff', '#00528f']	
 							},
 				"Pressure": {
 								valueDomain: [926, 947.75, 969.50, 991.25, 1013, 1034.75, 1056.50, 1078.25, 1100],

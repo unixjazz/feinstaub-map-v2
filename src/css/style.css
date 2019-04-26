@@ -231,13 +231,13 @@ body {
 }
 
 #legend_Temperature .gradient {
-	background: -webkit-linear-gradient(bottom, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
-	background: linear-gradient(to top, #0022FE 0%, #FFFFFF 30%, #FF0000 100%);
+	background: -webkit-linear-gradient(bottom, #4050B0 0%, #5679f9 16.6%, #55cbd9 33.3%, #a2cf4a 50%, #fedb64 66.6%, #fe8f52 83.3%, #e6380f 100%);
+	background: linear-gradient(to top, , #4050B0 0%, #5679f9 16.6%, #55cbd9 33.3%, #a2cf4a 50%, #fedb64 66.6%, #fe8f52 83.3%, #e6380f 100%);
 }
 
 #legend_Humidity .gradient {
-	background: -webkit-linear-gradient(bottom, #FFFFFF 0%, #0000FF 100%);
-	background: linear-gradient(to top, #FFFFFF 0%, #0000FF 100%);
+	background: -webkit-linear-gradient(bottom, #c41a0a 0%, #f47a0b 20%, #f4e60b 40%, #aff474 60%, #6dbcff 80%, #00528f 100%);
+	background: linear-gradient(to top, #c41a0a 0%, #f47a0b 20%, #f4e60b 40%, #aff474 60%, #6dbcff 80%, #00528f 100%);
 }
 
 #legend_Pressure .gradient {
