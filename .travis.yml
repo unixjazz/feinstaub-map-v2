@@ -1,4 +1,5 @@
 os:
+  - Linux
   - macOS
   - windows
 dist: xenial
