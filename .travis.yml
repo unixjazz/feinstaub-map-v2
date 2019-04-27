@@ -1,6 +1,11 @@
+os:
+  - macOS
+  - windows
+dist: xenial
 language: node_js
 node_js:
-  - '6'
+  - node
+  - lts/*
 script:
   - cp src/js/config.js.dist src/js/config.js
   - npm run build
