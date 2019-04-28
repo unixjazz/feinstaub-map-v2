@@ -480,20 +480,22 @@ function switchLegend(val) {
     d3.select('#legend_' + val).style("display", "block");
 }
 
-function checkValues(obj) {
+function checkValues(obj,sel) {
     let result = false;
     if (obj !== undefined && typeof (obj) === 'number' && !isNaN(obj)) {
-        if ((user_selected_value === "Humidity") && (obj >= 0) && (obj <= 100)) {
+        if ((sel === "Humidity") && (obj >= 0) && (obj <= 100)) {
             result = true;
-        } else if ((user_selected_value === "Temperature") && (obj <= 70 && obj >= -50)) {
+        } else if ((sel === "Temperature") && (obj <= 70 && obj >= -50)) {
             result = true;
-        } else if ((user_selected_value === "Pressure") && (obj >= 850) && (obj < 1200)) {
+        } else if ((sel === "Pressure") && (obj >= 850) && (obj < 1200)) {
             result = true;
-        } else if ((user_selected_value === "PM10") && (obj < 1900)) {
+        } else if ((sel === "PM10") && (obj < 1900)) {
             result = true;
-        } else if ((user_selected_value === "PM25") && (obj < 900)) {
+        } else if ((sel === "PM25") && (obj < 900)) {
             result = true;
-        }
+        } else if (sel === "Official_AQI_US") {
+			result = true;
+		}
     }
     return result;
 }
@@ -501,66 +503,68 @@ function checkValues(obj) {
 function ready(data, num) {
     let timestamp;
     if (num === 1) {
-        hmhexaPM_aktuell = data.reduce(function (filtered, item) {
-            const sensor_name = item.sensor.sensor_type.name;
-			if (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name]) {
-                filtered.push({
-                    "data": {
-                        "PM10": parseInt(getRightValue(item.sensordatavalues, "P1")),
-                        "PM25": parseInt(getRightValue(item.sensordatavalues, "P2"))
-                    }, "id": item.sensor.id, "latitude": item.location.latitude, "longitude": item.location.longitude
-                })
-            }
-            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
-            return filtered;
-        }, []);
-
+        hmhexaPM_aktuell = data
+			.filter(function (item) {
+				return (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name] && checkValues(parseInt(getRightValue(item.sensordatavalues, "P1")),"PM10") && checkValues(parseInt(getRightValue(item.sensordatavalues, "P2")),"PM25"));
+			})
+			.map(function (item) {
+				if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;				
+				return {
+					"data": {
+						"PM10": parseInt(getRightValue(item.sensordatavalues, "P1")),
+						"PM25": parseInt(getRightValue(item.sensordatavalues, "P2"))
+					},
+					"id": item.sensor.id,
+					"latitude": item.location.latitude,
+					"longitude": item.location.longitude
+				}
+			})			
     } else if (num === 2) {
-
-        hmhexaPM_AQI = data.reduce(function (filtered, item) {
-            const sensor_name = item.sensor.sensor_type.name;
-			if (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name]) {
+        hmhexaPM_AQI = data
+			.filter(function (item){
+				return (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name]);
+			})
+			.map(function(item){
+	            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
                 const data_in = {
                     "PM10": parseInt(getRightValue(item.sensordatavalues, "P1")),
                     "PM25": parseInt(getRightValue(item.sensordatavalues, "P2"))
                 };
                 const data_out = officialAQIus(data_in);
-                if (typeof data_out != 'undefined') {
-                    filtered.push({
-                        "data": {
-                            "Official_AQI_US": data_out.AQI,
-                            "origin": data_out.origin,
-                            "PM10_24h": data_in.PM10,
-                            "PM25_24h": data_in.PM25
-                        },
-                        "id": item.sensor.id,
-                        "latitude": item.location.latitude,
-                        "longitude": item.location.longitude
-                    })
-                } else {
-                    console.log(`%c Failed`, 'color:red');
-                    console.log(item);
-                }
-            }
-            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
-            return filtered;
-        }, []);
+                return {
+                    "data": {
+                        "Official_AQI_US": data_out.AQI,
+                        "origin": data_out.origin,
+                        "PM10_24h": data_in.PM10,
+                        "PM25_24h": data_in.PM25
+                    },
+                    "id": item.sensor.id,
+                    "latitude": item.location.latitude,
+                    "longitude": item.location.longitude
+				}
+			})
+			.filter(function (item){
+				return (checkValues(item.data.Official_AQI_US,"Official_AQI_US"));
+			})
     } else {
         // REVOIR LES TYPES DE SENSORS
-        hmhexa_t_h_p = data.reduce(function (filtered, item) {
-            filtered.push({
-                "data": {
-                    "Pressure": parseInt(getRightValue(item.sensordatavalues, "pressure_at_sealevel")) / 100,
-                    "Humidity": parseInt(getRightValue(item.sensordatavalues, "humidity")),
-                    "Temperature": parseInt(getRightValue(item.sensordatavalues, "temperature"))
-                },
-                "id": item.sensor.id,
-                "latitude": item.location.latitude,
-                "longitude": item.location.longitude
-            });
-            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
-            return filtered;
-        }, []);
+        hmhexa_t_h_p = data
+			.filter(function(item){
+				return (typeof thp_sensors[item.sensor.sensor_type.name] != "undefined" && thp_sensors[item.sensor.sensor_type.name]);
+			})
+			.map(function(item) {
+	            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
+				return {
+					"data": {
+						"Pressure": parseInt(getRightValue(item.sensordatavalues, "pressure_at_sealevel")) / 100,
+						"Humidity": parseInt(getRightValue(item.sensordatavalues, "humidity")),
+						"Temperature": parseInt(getRightValue(item.sensordatavalues, "temperature"))
+					},
+					"id": item.sensor.id,
+					"latitude": item.location.latitude,
+					"longitude": item.location.longitude
+				}
+			})
     }
 
     const dateParser = timeParse("%Y-%m-%d %H:%M:%S");
@@ -574,9 +578,7 @@ function ready(data, num) {
 
     if (num === 1 && (user_selected_value === "PM10" || user_selected_value === "PM25")) {
         hexagonheatmap.initialize(scale_options[user_selected_value]);
-        hexagonheatmap.data(hmhexaPM_aktuell.filter(function (value) {
-            return checkValues(value.data[user_selected_value]);
-        }));
+        hexagonheatmap.data(hmhexaPM_aktuell);
     }
     if (num === 2 && user_selected_value === "Official_AQI_US") {
         hexagonheatmap.initialize(scale_options[user_selected_value]);
@@ -585,7 +587,7 @@ function ready(data, num) {
     if (num === 3 && (user_selected_value === "Temperature" || user_selected_value === "Humidity" || user_selected_value === "Pressure")) {
         hexagonheatmap.initialize(scale_options[user_selected_value]);
         hexagonheatmap.data(hmhexa_t_h_p.filter(function (value) {
-            return checkValues(value.data[user_selected_value]);
+            return checkValues(value.data[user_selected_value],user_selected_value);
         }));
     }
     d3.select("#loading").style("display", "none");
@@ -601,14 +603,12 @@ function reload(val) {
     hexagonheatmap.initialize(scale_options[val]);
 
     if (val === "PM10" || val === "PM25") {
-        hexagonheatmap.data(hmhexaPM_aktuell.filter(function (value) {
-            return checkValues(value.data[val]);
-        }));
+        hexagonheatmap.data(hmhexaPM_aktuell);
     } else if (val === "Official_AQI_US") {
         hexagonheatmap.data(hmhexaPM_AQI);
     } else if (val === "Temperature" || val === "Humidity" || val === "Pressure") {
         hexagonheatmap.data(hmhexa_t_h_p.filter(function (value) {
-            return checkValues(value.data[val]);
+            return checkValues(value.data[user_selected_value],user_selected_value);
         }));
     }
 }
