@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "d3-array": "^2.0.3",
-    "d3-fetch": "^1.1.2",
     "d3-geo": "^1.11.3",
     "d3-hexbin": "^0.2.2",
     "d3-scale": "^3.0.0",
@@ -43,6 +42,7 @@
     "d3-timer": "^1.0.9",
     "d3-transition": "^1.2.0",
     "leaflet": "^1.4.0",
-    "leaflet-hash": "^0.2.1"
+    "leaflet-hash": "^0.2.1",
+    "whatwg-fetch": "^3.0.0"
   }
 }

@@ -9,11 +9,11 @@ import * as d3_Selection from 'd3-selection';
 import * as d3_Transition from "d3-transition";
 import {scaleLinear} from 'd3-scale';
 import {geoPath, geoTransform} from 'd3-geo';
-import {json} from 'd3-fetch';
 import {timeMinute} from 'd3-time';
 import {interval, timeout} from 'd3-timer';
 import {timeFormatLocale, timeParse} from 'd3-time-format';
 import {median} from 'd3-array';
+import 'whatwg-fetch';
 
 const d3 = Object.assign({}, d3_Selection, d3_Hexbin);
 
@@ -425,15 +425,19 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
     map.clicked = 0;
     hexagonheatmap = L.hexbinLayer(scale_options[user_selected_value]).addTo(map);
 
+	function fetchURL(url) {
+		return fetch(url).then((response) => response.json())
+	}
+
 //	REVOIR ORDRE DANS FONCTION READY
     function retrieveData() {
-        json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function (data) {
-            ready(data, 1);
-            json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function (data) {
-                ready(data, 2)
+        fetchURL("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function (json) {
+            ready(json, 1);
+            fetchURL("https://maps.luftdaten.info/data/v2/data.24h.json").then(function (json) {
+                ready(json, 2)
             });
-            json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function (data) {
-                ready(data, 3)
+            fetchURL("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function (json) {
+                ready(json, 3)
             });
         });
         console.log('retrieving data')
