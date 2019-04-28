@@ -24,7 +24,7 @@ import * as places from './places.js';
 import * as zooms from './zooms.js';
 import * as translate from './translate.js';
 
-//MAP
+// declare variables
 let hexagonheatmap, hmhexaPM_aktuell, hmhexaPM_AQI, hmhexa_t_h_p;
 
 // selected value from the dropdown
@@ -114,16 +114,12 @@ const query = {
     for (let i = 0; i < search_values.length; i++) {
         telem = search_values[i].split('=');
         query[telem[0]] = '';
-        if (typeof telem[1] != 'undefined') {
-            query[telem[0]] = telem[1];
-        }
+        if (typeof telem[1] != 'undefined') query[telem[0]] = telem[1];
     }
 })();
 
 // show betterplace overlay
-if (query.no_overlay === "false") {
-    d3.select("#betterplace").style("display", "inline-block");
-}
+if (query.no_overlay === "false") d3.select("#betterplace").style("display", "inline-block");
 
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
@@ -141,9 +137,7 @@ if (location.hash) {
             coordsCenter = places[place];
             zoomLevel = 11;
         }
-        if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) {
-            zoomLevel = zooms[place];
-        }
+        if (typeof zooms[place] !== 'undefined' && zooms[place] !== null) zoomLevel = zooms[place];
         console.log("Center: " + coordsCenter);
         console.log("Zoom: " + zoomLevel);
     }
@@ -165,9 +159,7 @@ window.onload = function () {
             /*	REVOIR LE DOUBLECLIQUE*/
             click: function (e) {
                 timeout(function () {
-                    if (map.clicked === 1) {
-                        sensorNr(e);
-                    }
+                    if (map.clicked === 1) sensorNr(e);
                 }, 300)
             },
 
@@ -260,7 +252,6 @@ window.onload = function () {
 
             // Remove events
             map.off({'moveend': this._redraw}, this);
-
             this._container = null;
             this._map = null
 
@@ -337,14 +328,11 @@ window.onload = function () {
 
         _createHexagons(g, data, projection) {
             // Create the bins using the hexbin layout
-
             let hexbin = d3.hexbin()
                 .radius(this.getFlexRadius() / projection.scale)
                 .x((d) => d.point.x)
                 .y((d) => d.point.y);
             let bins = hexbin(data);
-
-//			console.log(bins)
 
             // Join - Join the Hexagons to the data
             let join = g.selectAll('path.hexbin-hexagon')
@@ -377,7 +365,6 @@ window.onload = function () {
                 .remove()
         },
         data(data) {
-//			console.log(data);
             this._data = (data != null) ? data : [];
             this.draw();
             return this
@@ -403,30 +390,29 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
     d3.select("#explanation").on("click", toggleExplanation);
 
     //	Select
-    var custom_select = d3.select("#custom-select");
+    const custom_select = d3.select("#custom-select");
     custom_select.select("select").selectAll("option").each(function (d, i) {
         d3.select(this).text(translate.tr(lang, d3.select(this).text()));
     });
     custom_select.select("select").property("value", config.selection);
     custom_select.append("div").attr("class", "select-selected").html(translate.tr(lang, d3.select("#custom-select").select("select").select("option:checked").text())).on("click", showAllSelect);
     custom_select.style("display", "inline-block");
-    user_selected_value = config.selection;
     switchLegend(user_selected_value);
-    console.log(user_selected_value);
 
     map.setView(coordsCenter, zoomLevel);
-
     map.clicked = 0;
-
     hexagonheatmap = L.hexbinLayer(scale_options[user_selected_value]).addTo(map);
 
-
 //	REVOIR ORDRE DANS FONCTION READY
-
     function retrieveData() {
-        json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
-            json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
-            json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
+        json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function (data) {
+            ready(data, 1);
+            json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function (data) {
+                ready(data, 2)
+            });
+            json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function (data) {
+                ready(data, 3)
+            });
         });
         console.log('retrieving data')
     }
@@ -435,7 +421,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
     retrieveData();
 
     // refresh data
-    interval(function(){
+    interval(function () {
         d3.selectAll('path.hexbin-hexagon').remove();
         retrieveData();
     }, 300000);
@@ -443,7 +429,8 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
     map.on('moveend', function () {
         hexagonheatmap._zoomChange();
     });
-    map.on('move');
+    map.on('move', function () {
+    });
 
 //	REVOIR LE DOUBLECLIQUE
 
@@ -456,7 +443,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
             }
         }, 300);
     });
-    map.on('dblclick', function (e) {
+    map.on('dblclick', function () {
         map.clicked = 0;
         map.zoomIn();
     });
@@ -486,7 +473,7 @@ function checkValues(obj) {
 }
 
 function ready(data, num) {
-
+    let timestamp_data = '';
     let timestamp;
     if (num === 1) {
         hmhexaPM_aktuell = data.reduce(function (filtered, item) {
@@ -502,7 +489,6 @@ function ready(data, num) {
             if (item.timestamp > timestamp) timestamp = item.timestamp;
             return filtered;
         }, []);
-//		console.log(hmhexaPM_aktuell);
 
     } else if (num === 2) {
 
@@ -544,7 +530,6 @@ function ready(data, num) {
                     "Temperature": parseInt(getRightValue(item.sensordatavalues, "temperature"))
                 }, "id": item.sensor.id, "latitude": item.location.latitude, "longitude": item.location.longitude
             });
-            let timestamp_data;
             if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
             return filtered;
         }, []);
@@ -613,7 +598,6 @@ function getRightValue(array, type) {
 //MENU
 function toggleSidebar() {
     const x = d3.select("#sidebar");
-
     if (x.style("display") === "block") {
         x.style("display", "none");
         if (!d3.select("#results").empty()) {
@@ -626,7 +610,6 @@ function toggleSidebar() {
 
 function toggleExplanation() {
     const x = d3.select("#map-info");
-
     if (x.style("display") === "none") {
         x.style("display", "block");
         d3.select("#explanation").html(translate.tr(lang, "Hide explanation"));
@@ -642,15 +625,13 @@ function sensorNr(data) {
         inner_pre = "(+) #"
     }
 
-    openedGraph1 = [];
-
     if (!d3.select("#results").empty()) {
         d3.select("#results").remove();
     }
-    const x = d3.select("#sidebar");
-    if (x.style("display") === "none") {
-        x.style("display", "block");
-    }
+
+    // open or close sidebar
+    toggleSidebar();
+
     let textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>" + translate.tr(lang, 'Sensor') + "</th><th class = 'title'>" + translate.tr(lang, titles[user_selected_value]) + "</th></tr>";
     if (data.length > 1) {
         textefin += "<tr><td class='idsens'>Median " + data.length + " Sens.</td><td>" + parseInt(median(data, (o) => o.o.data[user_selected_value])) + "</td></tr>";
@@ -760,14 +741,10 @@ function displayGraph(id) {
             .attr("colspan", "2")
             .html(panel_str.replace("<PANELID>", panelIDs[user_selected_value][0]).replace("<SENSOR>", sens) + "<br>" + panel_str.replace("<PANELID>", panelIDs[user_selected_value][1]).replace("<SENSOR>", sens));
 
-        if (user_selected_value !== "Official_AQI_US") {
-            inner_pre = "(-) ";
-        }
+        if (user_selected_value !== "Official_AQI_US") inner_pre = "(-) ";
         d3.select("#id_" + sens).html(inner_pre + "#" + sens);
     } else {
-        if (user_selected_value !== "Official_AQI_US") {
-            inner_pre = "(+) ";
-        }
+        if (user_selected_value !== "Official_AQI_US") inner_pre = "(+) ";
         d3.select("#id_" + sens).html(inner_pre + "#" + sens);
         removeTd(sens);
     }
@@ -801,11 +778,9 @@ function showAllSelect() {
     if (custom_select.select(".select-items").empty()) {
         custom_select.append("div").attr("class", "select-items");
         custom_select.select("select").selectAll("option").each(function () {
-            if (this.value !== user_selected_value) {
-                custom_select.select(".select-items").append("div").text(this.text).attr("id", "select-item-" + this.value).on("click", function () {
-                    switchTo(this);
-                });
-            }
+            if (this.value !== user_selected_value) custom_select.select(".select-items").append("div").text(this.text).attr("id", "select-item-" + this.value).on("click", function () {
+                switchTo(this);
+            });
         });
         custom_select.select(".select-selected").attr("class", "select-selected select-arrow-active");
     }

@@ -1,18 +1,9 @@
-* {
-	font-family: arial, sans-serif;
-}
-
 body {
 	font-family: arial, sans-serif;
 	height: 100%;
 	width: 100%;
 	margin: 0;
 	padding: 0;
-}
-
-.app {
-	height: 100%;
-	width: 100%;
 }
 
 #topcontainer {
@@ -65,10 +56,6 @@ body {
 	border-radius: 5px;
 }
 
-#update:hover, #update:focus {
-	background-color: rgba(56, 181, 173, 1);
-}
-
 #map {
 	position: absolute;
 	top: 0;
@@ -92,21 +79,21 @@ body {
 .custom-select {
 	color: black;
 	font-weight: bold;
-	font-size: 14px;
-	width: 15em;
-	height: auto;
+	font-size: 1.3rem;
+	width: 10em;
+	height: 2.3rem;
 	display: inline-block;
 	background-color: rgba(56, 181, 173, 0.8);
 	border-radius: 8px;
 	border: 1px solid transparent;
 	position: absolute;
-	bottom: 20px;
-	margin-left: 20px;
+	bottom: 1rem;
+	margin-left: 1rem;
 	pointer-events: auto;
 }
 
 .custom-select:hover, .custom-select:focus {
-	background-color: rgba(56, 181, 173, 1);
+	background-color: rgb(49, 135, 127);
 }
 
 .custom-select select {
@@ -152,7 +139,7 @@ body {
 
 .select-items div:hover, .same-as-selected {
 	border-radius: 8px;
-	background-color: rgba(56, 181, 173, 1);
+	background-color: rgb(49, 135, 127);
 }
 
 #explanation {
@@ -170,7 +157,7 @@ body {
 
 #legendcontainer {
 	display: inline-block;
-	width: 10em;
+	width: 9.5em;
 	height: 100%;
 	background-color: rgba(255, 255, 255, 0.8);
 }
@@ -275,22 +262,9 @@ li {
 	cursor: pointer;
 }
 
-.tooltip-text {
-}
-
 .tooltip-text div {
 	display: none;
 	pointer-events: auto;
-}
-
-.tooltip-text:hover div {
-	display: inline;
-	position: absolute;
-	bottom: 0;
-	overflow: hidden;
-	background-color: rgba(56, 181, 173, 1);
-	z-index: 1000;
-	margin-left: 5px;
 }
 
 .tooltip-div {
@@ -393,7 +367,7 @@ tr {
 }
 
 #menu:hover, #menu:focus {
-	background-color: rgba(56, 181, 173, 1);
+	background-color: rgb(49, 135, 127);
 }
 
 #sidebar {
