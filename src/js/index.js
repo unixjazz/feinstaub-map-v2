@@ -35,6 +35,7 @@ const lang = translate.getFirstBrowserLanguage().substring(0, 2);
 
 let openedGraph1 = [];
 let click_inside_select = false;
+let timestamp_data = '';			// needs to be global to work over all 3 data streams
 
 const locale = timeFormatLocale({
     "dateTime": "%Y.%m.%d %H:%M:%S",
@@ -89,6 +90,27 @@ const panelIDs = {
     "Temperature": [4, 3],
     "Humidity": [6, 5],
     "Pressure": [8, 7]
+};
+
+const pm_sensors = {
+	"SDS011": true,
+	"SDS021": true,
+	"PMS1003": true,
+	"PMS3003": true,
+	"PMS5003": true,
+	"PMS6003": true,
+	"PMS7003": true,
+	"HPM": true,
+	"SPS30": true,
+};
+
+const thp_sensors = {
+	"DHT22": true,
+	"BMP180": true,
+	"BMP280": true,
+	"BME280": true,
+	"HTU21B": true,
+	"DS18B20": true,
 };
 
 const div = d3.select("#sidebar").append("div").attr("id", "table").style("display", "none");
@@ -473,12 +495,11 @@ function checkValues(obj) {
 }
 
 function ready(data, num) {
-    let timestamp_data = '';
     let timestamp;
     if (num === 1) {
         hmhexaPM_aktuell = data.reduce(function (filtered, item) {
             const sensor_name = item.sensor.sensor_type.name;
-            if (sensor_name === "SDS011" || sensor_name === "PMS1003" || sensor_name === "PMS3003" || sensor_name === "PMS5003" || sensor_name === "PMS6003" || sensor_name === "PMS7003" || sensor_name === "HPM" || sensor_name === "SPS30") {
+			if (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name]) {
                 filtered.push({
                     "data": {
                         "PM10": parseInt(getRightValue(item.sensordatavalues, "P1")),
@@ -486,7 +507,7 @@ function ready(data, num) {
                     }, "id": item.sensor.id, "latitude": item.location.latitude, "longitude": item.location.longitude
                 })
             }
-            if (item.timestamp > timestamp) timestamp = item.timestamp;
+            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
             return filtered;
         }, []);
 
@@ -494,7 +515,7 @@ function ready(data, num) {
 
         hmhexaPM_AQI = data.reduce(function (filtered, item) {
             const sensor_name = item.sensor.sensor_type.name;
-            if (sensor_name === "SDS011" || sensor_name === "PMS1003" || sensor_name === "PMS3003" || sensor_name === "PMS5003" || sensor_name === "PMS6003" || sensor_name === "PMS7003" || sensor_name === "HPM" || sensor_name === "SPS30") {
+			if (typeof pm_sensors[item.sensor.sensor_type.name] != "undefined" && pm_sensors[item.sensor.sensor_type.name]) {
                 const data_in = {
                     "PM10": parseInt(getRightValue(item.sensordatavalues, "P1")),
                     "PM25": parseInt(getRightValue(item.sensordatavalues, "P2"))
@@ -517,7 +538,7 @@ function ready(data, num) {
                     console.log(item);
                 }
             }
-            if (item.timestamp > timestamp) timestamp = item.timestamp;
+            if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
             return filtered;
         }, []);
     } else {
@@ -528,7 +549,10 @@ function ready(data, num) {
                     "Pressure": parseInt(getRightValue(item.sensordatavalues, "pressure_at_sealevel")) / 100,
                     "Humidity": parseInt(getRightValue(item.sensordatavalues, "humidity")),
                     "Temperature": parseInt(getRightValue(item.sensordatavalues, "temperature"))
-                }, "id": item.sensor.id, "latitude": item.location.latitude, "longitude": item.location.longitude
+                },
+                "id": item.sensor.id,
+                "latitude": item.location.latitude,
+                "longitude": item.location.longitude
             });
             if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
             return filtered;
@@ -536,7 +560,7 @@ function ready(data, num) {
     }
 
     const dateParser = timeParse("%Y-%m-%d %H:%M:%S");
-    timestamp = dateParser(data[0].timestamp);
+    timestamp = dateParser(timestamp_data);
     const localTime = new Date();
     const timeOffset = localTime.getTimezoneOffset();
     const newTime = timeMinute.offset(timestamp, -(timeOffset));
