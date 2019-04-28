@@ -1,11 +1,11 @@
 <!doctype html>
-<html>
+<html lang="">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name=viewport content="width=device-width,initial-scale=1" />
 <link rel="preload" href="main.js" as="script" />
-<link rel="preload" href="d3.bundle.js" as="script" />
-<link rel="preload" href="leaflet.bundle.js" as="script" />
+<!--<link rel="preload" href="d3.bundle.js" as="script" />-->
+<!--<link rel="preload" href="leaflet.bundle.js" as="script" />-->
 <style type="text/css">
 #loading {
 	position: absolute;
@@ -21,11 +21,12 @@
 	position: absolute;
 	top: 40%;
 	width: 100%;
-	font-family: Arial;
+	font-family: Arial,serif;
 	font-size: 200%;
 	font-weight: bold;	
 } 
 </style>
+	<title>Feinstaub-Karte Luftdaten.info</title>
 </head>
 <body>
 	<div id="topcontainer">
@@ -35,7 +36,7 @@
 	<span id="menu">&#9776;</span>
 	<div id="loading"><div>Loading data...<br/><span style="font-size:70%">Internet Explorer users: Please use the <a href="/old/">old version</a>.</span></div></div>
 	<div id="sidebar" style="display: none;"> 
-		<div id="close"></div>
+		<div id="close">&#10006;</div>
 		<div id="explanation"></div>
 		<div id="map-info" style="display: none;"></div>
 	</div>
