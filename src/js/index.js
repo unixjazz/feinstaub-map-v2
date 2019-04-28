@@ -4,18 +4,18 @@ import 'leaflet/dist/leaflet.css';
 
 //use d3-require to call from the internet
 
-import * as d3_TimeFormat from'd3-time-format';
-import * as d3_Selection from'd3-selection';
-import * as d3_Scale from'd3-scale';
-import * as d3_Geo from'd3-geo';
 import * as d3_Hexbin from "d3-hexbin";
-import * as d3_Fetch from'd3-fetch';
-import * as d3_Time from'd3-time';
-import * as d3_Timer from'd3-timer';
-import * as d3_Array from'd3-array';
-import * as d3_Transistion from "d3-transition";
+import * as d3_Selection from'd3-selection';
+import * as d3_Transition from "d3-transition";
+import { scaleLinear } from 'd3-scale';
+import { geoPath, geoTransform } from 'd3-geo';
+import { json } from'd3-fetch';
+import { timeMinute } from 'd3-time';
+import { interval, timeout } from 'd3-timer';
+import { timeFormatLocale, timeParse } from'd3-time-format';
+import { median } from 'd3-array';
 
-const d3 = Object.assign({},d3_Selection,d3_Scale,d3_Geo,d3_Hexbin,d3_Array,d3_Fetch,d3_Time,d3_TimeFormat,d3_Timer);
+const d3 = Object.assign({},d3_Selection,d3_Hexbin);
 
 import * as config from './config.js';
 
@@ -31,6 +31,8 @@ var hmhexaPM_aktuell;
 var hmhexaPM_AQI;
 var hmhexa_t_h_p;
 
+var timestamp_data = "";
+
 var selector1 = config.selection;
 
 var lang = translate.getFirstBrowserLanguage().substring(0,2);
@@ -43,7 +45,7 @@ var click_inside_select = false;
 
 var query={};
 
-var locale = d3.timeFormatLocale({
+var locale = timeFormatLocale({
 	"dateTime": "%Y.%m.%d %H:%M:%S",
 	"date": "%d.%m.%Y",
 	"time": "%H:%M:%S",
@@ -177,7 +179,7 @@ window.onload=function(){
 //			REVOIR LE DOUBLECLIQUE
 
 			click: 	function(e) {
-						d3.timeout(function() {
+						timeout(function() {
 							if(map.clicked == 1){
 								sensorNr(e);
 							}
@@ -191,14 +193,14 @@ window.onload=function(){
 			},
 			value: function (d) {
 //				Median everywhere!
-				return d3.median(d, (o) => o.o.data[selector1]);
+				return median(d, (o) => o.o.data[selector1]);
 			}
 		},
 
 		initialize (options) {
 			L.setOptions(this, options)
 			this._data = []
-			this._colorScale = d3.scaleLinear()
+			this._colorScale = scaleLinear()
 				.domain(this.options.valueDomain)
 				.range(this.options.colorRange)
 				.clamp(true)
@@ -255,7 +257,7 @@ window.onload=function(){
 				this.stream.point(point.x, point.y)
 			}
 
-			this.projection.pathFromGeojson = d3.geoPath().projection(d3.geoTransform({point: this.projection._projectPoint}))
+			this.projection.pathFromGeojson = geoPath().projection(geoTransform({point: this.projection._projectPoint}))
 
 			// Compatibility with v.1
 			this.projection.latLngToLayerFloatPoint = this.projection.latLngToLayerPoint
@@ -385,6 +387,7 @@ window.onload=function(){
 				.remove()
 		},
 		data (data) {
+//			console_log(data);
 			this._data = (data != null) ? data : []
 			this.draw()
 			return this
@@ -431,18 +434,18 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 //	REVOIR ORDRE DANS FONCTION READY
 
-	d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
-		d3.json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
-		d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
+	json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
+		json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
+		json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
 	})
 
-	d3.interval(function(){
+	interval(function(){
 
 		d3.selectAll('path.hexbin-hexagon').remove();
 
-		d3.json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
-			d3.json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
-			d3.json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
+		json("https://maps.luftdaten.info/data/v2/data.dust.min.json").then(function(data){ready(data,1);
+			json("https://maps.luftdaten.info/data/v2/data.24h.json").then(function(data){ready(data,2)});
+			json("https://maps.luftdaten.info/data/v2/data.temp.min.json").then(function(data){ready(data,3)});
 		})
 
 		console_log('reload')
@@ -457,7 +460,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 	map.on('click', function(e) {
 		console_log('Click');
 		map.clicked = map.clicked + 1;
-		d3.timeout(function() {
+		timeout(function() {
 			if(map.clicked == 1){
 				map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
 				map.clicked = 0;
@@ -495,6 +498,7 @@ function ready(data,num) {
 			if (item.sensor.sensor_type.name == "SDS011" || item.sensor.sensor_type.name == "PMS1003" || item.sensor.sensor_type.name == "PMS3003" || item.sensor.sensor_type.name == "PMS5003" || item.sensor.sensor_type.name == "PMS6003" || item.sensor.sensor_type.name == "PMS7003" || item.sensor.sensor_type.name == "HPM" || item.sensor.sensor_type.name == "SPS30") {
 				filtered.push({"data":{"PM10": parseInt(getRightValue(item.sensordatavalues,"P1")) , "PM25":parseInt( getRightValue(item.sensordatavalues,"P2"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
 			}
+			if (item.timestamp > timestamp) timestamp = item.timestamp;
 			return filtered;
 		}, []);
 //		console_log(hmhexaPM_aktuell);
@@ -512,6 +516,7 @@ function ready(data,num) {
 					console_log(item);
 				}
 			}
+			if (item.timestamp > timestamp) timestamp = item.timestamp;
 			return filtered;
 		}, []);
 //		console_log(hmhexaPM_AQI);
@@ -522,12 +527,13 @@ function ready(data,num) {
 
 		hmhexa_t_h_p = data.reduce(function(filtered, item) {
 			filtered.push({"data":{"Pressure":parseInt(getRightValue(item.sensordatavalues,"pressure_at_sealevel"))/100, "Humidity":parseInt(getRightValue(item.sensordatavalues,"humidity")), "Temperature":parseInt(getRightValue(item.sensordatavalues,"temperature"))}, "id":item.sensor.id, "latitude":item.location.latitude,"longitude":item.location.longitude})
+			if (item.timestamp > timestamp_data) timestamp_data = item.timestamp;
 			return filtered;
 		}, []);
 	}
 
-	var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
-	var timestamp = dateParser(data[0].timestamp);
+	var dateParser = timeParse("%Y-%m-%d %H:%M:%S");
+	var timestamp = dateParser(timestamp_data);
 
 //	console_log(timestamp);
 
@@ -536,7 +542,7 @@ function ready(data,num) {
 
 //	console_log(timeOffset);
 
-	var newTime = d3.timeMinute.offset(timestamp, -(timeOffset));
+	var newTime = timeMinute.offset(timestamp, -(timeOffset));
 
 //	console_log(newTime);
 
@@ -667,7 +673,7 @@ function sensorNr(data){
 
 	var textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>"+translate.tr(lang,'Sensor')+"</th><th class = 'title'>"+translate.tr(lang,titles[selector1])+"</th></tr>";
 	if (data.length > 1) {
-		textefin += "<tr><td class='idsens'>Median "+data.length+" Sens.</td><td>"+parseInt(d3.median(data, (o) => o.o.data[selector1]))+"</td></tr>";
+		textefin += "<tr><td class='idsens'>Median "+data.length+" Sens.</td><td>"+parseInt(median(data, (o) => o.o.data[selector1]))+"</td></tr>";
 	}
 	var sensors = '';
 	data.forEach(function(i) {
