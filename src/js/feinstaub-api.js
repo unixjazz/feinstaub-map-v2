@@ -58,7 +58,7 @@ let api = {
 	},
 
 	officialAQIus(data) {
-		
+
 		function aqius(val, type) {
 			let index;
 
@@ -108,7 +108,7 @@ let api = {
 		function calculate_aqi_us(Ih, Il, Ch, Cl, C) {
 			return parseInt((((Ih - Il) / (Ch - Cl)) * (C - Cl)) + Il);
 		}
-		
+
 		const P1 = aqius(data.PM10, 'PM10');
 		const P2 = aqius(data.PM25, 'PM25');
 		return (P1 >= P2) ? {"AQI": P1, "origin": "PM10"} : {"AQI": P2, "origin": "PM2.5"};
@@ -122,7 +122,7 @@ let api = {
 			let timestamp_data = '';
 			if (num === 1) {
 				let cells = _.chain(json)
-					.filter((sensor) => 
+					.filter((sensor) =>
 						typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.pm_sensors[sensor.sensor.sensor_type.name]
 						&& api.checkValues(parseInt(api.getRightValue(sensor.sensordatavalues, "P1")),"PM10")
@@ -140,11 +140,11 @@ let api = {
 							}
 						}
 					})
-					.value()
+					.value();
 				return Promise.resolve({ cells: cells, timestamp: timestamp_data })
 			} else if (num === 2) {
 				let cells = _.chain(json)
-					.filter((sensor) => 
+					.filter((sensor) =>
 						typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.pm_sensors[sensor.sensor.sensor_type.name]
 					)
@@ -170,11 +170,11 @@ let api = {
 					.filter(function (values){
 						return (api.checkValues(values.data.Official_AQI_US,"Official_AQI_US"));
 					})
-					.value()
+					.value();
 				return Promise.resolve({ cells: cells, timestamp: timestamp_data });
 			} else {
 				let cells = _.chain(json)
-					.filter((sensor) => 
+					.filter((sensor) =>
 						typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.thp_sensors[sensor.sensor.sensor_type.name]
 					)
@@ -191,11 +191,11 @@ let api = {
 							"longitude": values.location.longitude
 						}
 					})
-					.value()
+					.value();
 				return Promise.resolve({ cells: cells, timestamp: timestamp_data });
 			}
 		})
 	}
-}
+};
 
 export default api
