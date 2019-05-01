@@ -23,10 +23,6 @@ let api = {
 		"DS18B20": true,
 	},
 
-	fetchNow(URL) {
-		return fetch(URL).then((response) => response.json())
-	},
-
 	checkValues(obj,sel) {
 		let result = false;
 		if (obj !== undefined && typeof (obj) === 'number' && !isNaN(obj)) {
@@ -45,16 +41,6 @@ let api = {
 			}
 		}
 		return result;
-	},
-
-	getRightValue(array, type) {
-		let value;
-		array.forEach(function (item) {
-			if (item.value_type === type) {
-				value = item.value;
-			}
-		});
-		return value;
 	},
 
 	officialAQIus(data) {
@@ -118,15 +104,31 @@ let api = {
 	// /now returns data from last 5 minutes, so we group all data by sensorId
 	// and compute a mean to get distinct values per sensor
 	getAllSensors(URL,num) {
-		return api.fetchNow(URL).then((json) => {
+
+		function getRightValue(array, type) {
+			let value;
+			array.forEach(function (item) {
+				if (item.value_type === type) {
+					value = item.value;
+				}
+			});
+			return value;
+		}
+
+		function fetchNow(URL) {
+			return fetch(URL).then((response) => response.json())
+		}
+
+		return fetchNow(URL).then((json) => {
 			let timestamp_data = '';
 			if (num === 1) {
 				let cells = _.chain(json)
 					.filter((sensor) =>
-						typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
+						!(sensor.location.indoor)
+						&& typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.pm_sensors[sensor.sensor.sensor_type.name]
-						&& api.checkValues(parseInt(api.getRightValue(sensor.sensordatavalues, "P1")),"PM10")
-						&& api.checkValues(parseInt(api.getRightValue(sensor.sensordatavalues, "P2")),"PM25")
+						&& api.checkValues(parseInt(getRightValue(sensor.sensordatavalues, "P1")),"PM10")
+						&& api.checkValues(parseInt(getRightValue(sensor.sensordatavalues, "P2")),"PM25")
 					)
 					.map((values) => {
 						if (values.timestamp > timestamp_data) timestamp_data = values.timestamp;
@@ -135,8 +137,8 @@ let api = {
 							longitude: Number(values.location.longitude),
 							id: values.sensor.id,
 							data: {
-								PM10: parseInt(api.getRightValue(values.sensordatavalues, "P1")),
-								PM25: parseInt(api.getRightValue(values.sensordatavalues, "P2"))
+								PM10: parseInt(getRightValue(values.sensordatavalues, "P1")),
+								PM25: parseInt(getRightValue(values.sensordatavalues, "P2"))
 							}
 						}
 					})
@@ -145,14 +147,15 @@ let api = {
 			} else if (num === 2) {
 				let cells = _.chain(json)
 					.filter((sensor) =>
-						typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
+						!(sensor.location.indoor)
+						&& typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.pm_sensors[sensor.sensor.sensor_type.name]
 					)
 					.map((values) => {
 						if (values.timestamp > timestamp_data) timestamp_data = values.timestamp;
 						const data_in = {
-							"PM10": parseInt(api.getRightValue(values.sensordatavalues, "P1")),
-							"PM25": parseInt(api.getRightValue(values.sensordatavalues, "P2"))
+							"PM10": parseInt(getRightValue(values.sensordatavalues, "P1")),
+							"PM25": parseInt(getRightValue(values.sensordatavalues, "P2"))
 						};
 						const data_out = api.officialAQIus(data_in);
 						return {
@@ -175,16 +178,17 @@ let api = {
 			} else {
 				let cells = _.chain(json)
 					.filter((sensor) =>
-						typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
+						!(sensor.location.indoor)
+						&& typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
 						&& api.thp_sensors[sensor.sensor.sensor_type.name]
 					)
 					.map((values) => {
 						if (values.timestamp > timestamp_data) timestamp_data = values.timestamp;
 						return {
 							"data": {
-								"Pressure": parseInt(api.getRightValue(values.sensordatavalues, "pressure_at_sealevel")) / 100,
-								"Humidity": parseInt(api.getRightValue(values.sensordatavalues, "humidity")),
-								"Temperature": parseInt(api.getRightValue(values.sensordatavalues, "temperature"))
+								"Pressure": parseInt(getRightValue(values.sensordatavalues, "pressure_at_sealevel")) / 100,
+								"Humidity": parseInt(getRightValue(values.sensordatavalues, "humidity")),
+								"Temperature": parseInt(getRightValue(values.sensordatavalues, "temperature"))
 							},
 							"id": values.sensor.id,
 							"latitude": values.location.latitude,
