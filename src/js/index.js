@@ -388,6 +388,13 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 	d3.select("#menu").on("click", toggleSidebar);
 	d3.select("#explanation").on("click", toggleExplanation);
+	d3.select("#legend_Official_AQI_US").selectAll(".tooltip").on("click",function(){window.open('https://www.airnow.gov/index.cfm?action=aqibasics.aqi','_blank');return false;});
+	d3.select("#AQI_Good").html(" "+translate.tr(lang,"Good<div class='tooltip-div'>Air quality is considered satisfactory, and air pollution poses little or no risk.</div>"));
+	d3.select("#AQI_Moderate").html(" "+translate.tr(lang,"Moderate<div class='tooltip-div'>Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.</div>"));
+	d3.select("#AQI_Unhealthy_Sensitive").html(" "+translate.tr(lang,"Unhealthy for Sensitive Groups<div class='tooltip-div'>Members of sensitive groups may experience health effects. The general public is not likely to be affected.</div>"));
+	d3.select("#AQI_Unhealthy").html(" "+translate.tr(lang,"Unhealthy<div class='tooltip-div'>Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects.</div>"));
+	d3.select("#AQI_Very_Unhealthy").html(" "+translate.tr(lang,"Very Unhealthy<div class='tooltip-div'>Health alert: everyone may experience more serious health effects.</div>"));
+	d3.select("#AQI_Hazardous").html(" "+translate.tr(lang,"Hazardous<div class='tooltip-div'>Health warnings of emergency conditions. The entire population is more likely to be affected.</div>"));
 
 	//	Select
 	const custom_select = d3.select("#custom-select");
