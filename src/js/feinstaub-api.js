@@ -15,12 +15,19 @@ let api = {
 	},
 
 	thp_sensors: {
+		"DHT11": true,
 		"DHT22": true,
 		"BMP180": true,
 		"BMP280": true,
 		"BME280": true,
 		"HTU21B": true,
 		"DS18B20": true,
+		"SHT11": true,
+		"SHT12": true,
+		"SHT15": true,
+		"SHT30": true,
+		"SHT31": true,
+		"SHT35": true,
 	},
 
 	checkValues(obj,sel) {
