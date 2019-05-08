@@ -16,6 +16,7 @@ body {
 }
 
 #betterplace {
+    font-size: 0.8em;
     text-align: center;
     border: 0;
     position: relative;
@@ -41,9 +42,9 @@ body {
 }
 
 #update {
-    color: black;
+    color: white;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 0.8em;
     position: relative;
     top: 10px;
     left: 10px;
