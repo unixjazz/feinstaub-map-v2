@@ -643,7 +643,6 @@ function displayGraph(id) {
 	}
 }
 
-
 function removeInArray(array) {
 	let what, a = arguments, L = a.length, ax;
 	while (L > 1 && array.length) {
