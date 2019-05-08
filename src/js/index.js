@@ -426,7 +426,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 	//	Select
 	const custom_select = d3.select("#custom-select");
-	custom_select.select("select").selectAll("option").each(function (d, i) {
+	custom_select.select("select").selectAll("option").each(function () {
 		d3.select(this).text(translate.tr(lang, d3.select(this).text()));
 	});
 	custom_select.select("select").property("value", config.selection);

@@ -30,7 +30,7 @@ let api = {
 		"SHT35": true,
 	},
 
-	checkValues(obj,sel) {
+	checkValues(obj, sel) {
 		let result = false;
 		if (obj !== undefined && typeof (obj) === 'number' && !isNaN(obj)) {
 			if ((sel === "Humidity") && (obj >= 0) && (obj <= 100)) {
@@ -107,9 +107,9 @@ let api = {
 		return (P1 >= P2) ? {"AQI": P1, "origin": "PM10"} : {"AQI": P2, "origin": "PM2.5"};
 	},
 
-	// fetches from /now, ignores non-finedust sensors
-	// /now returns data from last 5 minutes, so we group all data by sensorId
-	// and compute a mean to get distinct values per sensor
+	/* fetches from /now, ignores non-finedust sensors
+	now returns data from last 5 minutes, so we group all data by sensorId
+	 and compute a mean to get distinct values per sensor */
 	getData: async function (URL, num) {
 
 		function getRightValue(array, type) {
