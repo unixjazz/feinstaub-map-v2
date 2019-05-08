@@ -34,7 +34,6 @@ let user_selected_value = config.selection;
 const lang = translate.getFirstBrowserLanguage().substring(0, 2);
 
 let openedGraph1 = [];
-let click_inside_select = false;
 let timestamp_data = '';			// needs to be global to work over all 3 data streams
 
 const locale = timeFormatLocale({
@@ -143,6 +142,32 @@ if (location.hash) {
 		console.log("Zoom: " + zoomLevel);
 	}
 }
+
+
+//MENU
+
+// const menu = {
+// 	open: () => {
+// 		document.getElementById("menu").innerHTML = "&#9776;";
+// 		document.querySelector("#sidebar").style.display = "none";
+// 		if (!document.getElementById("#results").empty()) {
+// 			document.getElementById("#results").remove();
+// 			console.log("open sidebar")
+// 		}
+// 	},
+// 	close: () => {
+// 		document.getElementById("menu").innerHTML = "&#10006;";
+// 		document.querySelector("#sidebar").style.display = "block";
+// 		console.log("close sidebar")
+// 	},
+// 	toggle: () => {
+// 		if (document.querySelector("#sidebar").style("display") === "block") {
+// 			this.open();
+// 		} else {
+// 			this.close();
+// 		}
+// 	}
+// };
 
 window.onload = function () {
 	//	HEXBINS
@@ -377,7 +402,7 @@ window.onload = function () {
 	};
 
 	// enable elements
-	d3.select('#legend_PM10').style("display", "block");
+	// d3.select('#legend_PM10').style("display", "block");
 	d3.select('#explanation').html(translate.tr(lang, 'Show explanation'));
 	d3.select('#map-info').html(translate.tr(lang, "<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
 <p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
@@ -388,17 +413,20 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 	d3.select("#menu").on("click", toggleSidebar);
 	d3.select("#explanation").on("click", toggleExplanation);
-	d3.select("#legend_Official_AQI_US").selectAll(".tooltip").on("click",function(){window.open('https://www.airnow.gov/index.cfm?action=aqibasics.aqi','_blank');return false;});
-	d3.select("#AQI_Good").html(" "+translate.tr(lang,"Good<div class='tooltip-div'>Air quality is considered satisfactory, and air pollution poses little or no risk.</div>"));
-	d3.select("#AQI_Moderate").html(" "+translate.tr(lang,"Moderate<div class='tooltip-div'>Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.</div>"));
-	d3.select("#AQI_Unhealthy_Sensitive").html(" "+translate.tr(lang,"Unhealthy for Sensitive Groups<div class='tooltip-div'>Members of sensitive groups may experience health effects. The general public is not likely to be affected.</div>"));
-	d3.select("#AQI_Unhealthy").html(" "+translate.tr(lang,"Unhealthy<div class='tooltip-div'>Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects.</div>"));
-	d3.select("#AQI_Very_Unhealthy").html(" "+translate.tr(lang,"Very Unhealthy<div class='tooltip-div'>Health alert: everyone may experience more serious health effects.</div>"));
-	d3.select("#AQI_Hazardous").html(" "+translate.tr(lang,"Hazardous<div class='tooltip-div'>Health warnings of emergency conditions. The entire population is more likely to be affected.</div>"));
+	d3.select("#legend_Official_AQI_US").selectAll(".tooltip").on("click", function () {
+		window.open('https://www.airnow.gov/index.cfm?action=aqibasics.aqi', '_blank');
+		return false;
+	});
+	d3.select("#AQI_Good").html(" " + translate.tr(lang, "Good<div class='tooltip-div'>Air quality is considered satisfactory, and air pollution poses little or no risk.</div>"));
+	d3.select("#AQI_Moderate").html(" " + translate.tr(lang, "Moderate<div class='tooltip-div'>Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.</div>"));
+	d3.select("#AQI_Unhealthy_Sensitive").html(" " + translate.tr(lang, "Unhealthy for Sensitive Groups<div class='tooltip-div'>Members of sensitive groups may experience health effects. The general public is not likely to be affected.</div>"));
+	d3.select("#AQI_Unhealthy").html(" " + translate.tr(lang, "Unhealthy<div class='tooltip-div'>Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects.</div>"));
+	d3.select("#AQI_Very_Unhealthy").html(" " + translate.tr(lang, "Very Unhealthy<div class='tooltip-div'>Health alert: everyone may experience more serious health effects.</div>"));
+	d3.select("#AQI_Hazardous").html(" " + translate.tr(lang, "Hazardous<div class='tooltip-div'>Health warnings of emergency conditions. The entire population is more likely to be affected.</div>"));
 
 	//	Select
 	const custom_select = d3.select("#custom-select");
-	custom_select.select("select").selectAll("option").each(function (d, i) {
+	custom_select.select("select").selectAll("option").each(function () {
 		d3.select(this).text(translate.tr(lang, d3.select(this).text()));
 	});
 	custom_select.select("select").property("value", config.selection);
@@ -412,22 +440,21 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 //	REVOIR ORDRE DANS FONCTION READY
 	function retrieveData() {
-		api.getAllSensors("https://maps.luftdaten.info/data/v2/data.dust.min.json", 1).then(function (result) {
+		api.getData("https://maps.luftdaten.info/data/v2/data.dust.min.json", 1).then(function (result) {
 			hmhexaPM_aktuell = result.cells;
 			if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 			ready(1);
-			api.getAllSensors("https://maps.luftdaten.info/data/v2/data.24h.json", 2).then(function (result) {
+			api.getData("https://maps.luftdaten.info/data/v2/data.24h.json", 2).then(function (result) {
 				hmhexaPM_AQI = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(2);
 			});
-			api.getAllSensors("https://maps.luftdaten.info/data/v2/data.temp.min.json", 3).then(function (result) {
+			api.getData("https://maps.luftdaten.info/data/v2/data.temp.min.json", 3).then(function (result) {
 				hmhexa_t_h_p = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(3);
 			});
 		});
-		console.log('retrieving data');
 	}
 
 	//retrieve data from api
@@ -467,11 +494,39 @@ function switchLegend(val) {
 	d3.select('#legend_' + val).style("display", "block");
 }
 
-function ready(num) {
-	let timestamp;
+function openSidebar() {
+	document.getElementById("menu").innerHTML = "&#10006;";
+	document.getElementById("sidebar").style.display = "block";
+}
 
+function closeSidebar() {
+	document.getElementById("menu").innerHTML = "&#9776;";
+	document.getElementById("sidebar").style.display = "none";
+	d3.select("#results").remove();
+}
+
+function toggleSidebar() {
+	if (document.getElementById("sidebar").style.display === "block") {
+		closeSidebar();
+	} else {
+		openSidebar()
+	}
+}
+
+function toggleExplanation() {
+	const x = document.getElementById("map-info");
+	if (x.style.display === "none") {
+		x.style.display = "block";
+		d3.select("#explanation").html(translate.tr(lang, "Hide explanation"));
+	} else {
+		x.style.display = "none";
+		d3.select("#explanation").html(translate.tr(lang, "Show explanation"));
+	}
+}
+
+function ready(num) {
 	const dateParser = timeParse("%Y-%m-%d %H:%M:%S");
-	timestamp = dateParser(timestamp_data);
+	const timestamp = dateParser(timestamp_data);
 	const localTime = new Date();
 	const timeOffset = localTime.getTimezoneOffset();
 	const newTime = timeMinute.offset(timestamp, -(timeOffset));
@@ -496,14 +551,13 @@ function ready(num) {
 	d3.select("#loading").style("display", "none");
 }
 
-function reload(val) {
+function reloadMap(val) {
 	d3.selectAll('path.hexbin-hexagon').remove();
-	d3.select("#results").remove();
-	d3.select("#sidebar").style("display", "none");
 
+	closeSidebar();
 	switchLegend(val);
-	hexagonheatmap.initialize(scale_options[val]);
 
+	hexagonheatmap.initialize(scale_options[val]);
 	if (val === "PM10" || val === "PM25") {
 		hexagonheatmap.data(hmhexaPM_aktuell);
 	} else if (val === "Official_AQI_US") {
@@ -515,44 +569,13 @@ function reload(val) {
 	}
 }
 
-//MENU
-function toggleSidebar() {
-	const x = d3.select("#sidebar");
-	if (x.style("display") === "block") {
-		document.getElementById("menu").innerHTML = "&#9776;";
-		x.style("display", "none");
-		if (!d3.select("#results").empty()) {
-			d3.select("#results").remove();
-		}
-	} else {
-		document.getElementById("menu").innerHTML = "&#10006;";
-		x.style("display", "block");
-	}
-}
-
-function toggleExplanation() {
-	const x = d3.select("#map-info");
-	if (x.style("display") === "none") {
-		x.style("display", "block");
-		d3.select("#explanation").html(translate.tr(lang, "Hide explanation"));
-	} else {
-		x.style("display", "none");
-		d3.select("#explanation").html(translate.tr(lang, "Show explanation"));
-	}
-}
-
 function sensorNr(data) {
 	let inner_pre = "#";
 	if (user_selected_value !== "Official_AQI_US") {
 		inner_pre = "(+) #";
 	}
 
-	if (!d3.select("#results").empty()) {
-		d3.select("#results").remove();
-	}
-
-	// open or close sidebar
-	toggleSidebar();
+	openSidebar();
 
 	let textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>" + translate.tr(lang, 'Sensor') + "</th><th class = 'title'>" + translate.tr(lang, titles[user_selected_value]) + "</th></tr>";
 	if (data.length > 1) {
@@ -615,14 +638,11 @@ function displayGraph(id) {
 	} else {
 		if (user_selected_value !== "Official_AQI_US") inner_pre = "(+) ";
 		d3.select("#id_" + sens).html(inner_pre + "#" + sens);
-		removeTd(sens);
+		d3.select("#frame_" + sens).remove();
+		removeInArray(openedGraph1, sens);
 	}
 }
 
-function removeTd(id) {
-	d3.select("#frame_" + id).remove();
-	removeInArray(openedGraph1, id);
-}
 
 function removeInArray(array) {
 	let what, a = arguments, L = a.length, ax;
@@ -636,7 +656,6 @@ function removeInArray(array) {
 }
 
 function showAllSelect() {
-	click_inside_select = true;
 	const custom_select = d3.select("#custom-select");
 	if (custom_select.select(".select-items").empty()) {
 		custom_select.append("div").attr("class", "select-items");
@@ -654,11 +673,6 @@ function switchTo(element) {
 	custom_select.select("select").property("value", element.id.substring(12));
 	custom_select.select(".select-selected").text(custom_select.select("select").select("option:checked").text());
 	user_selected_value = element.id.substring(12);
-	reload(user_selected_value);
+	reloadMap(user_selected_value);
 	custom_select.select(".select-items").remove();
 }
-
-/* if the user clicks anywhere outside the select box, then close all select boxes */
-document.addEventListener("click", function () {
-	(!click_inside_select) ? d3.select("#custom-select").select(".select-items").remove() : click_inside_select = false;
-});

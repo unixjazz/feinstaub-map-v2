@@ -321,7 +321,8 @@ table {
 
 td {
     background-color: transparent;
-    height: 15px;
+    height: 0.9em;
+    font-weight: lighter;
     text-align: center;
     padding-right: 5px;
     border-width: 1px 1px 0 1px;
@@ -329,10 +330,12 @@ td {
 }
 
 th {
-    background-color: transparent;
-    height: 15px;
+    height: 1em;
     font-weight: bold;
     border: 1px solid #000;
+    color: white;
+    background-color: rgba(56,181,173,.6);
+    padding: 4px;
 }
 
 tr {
