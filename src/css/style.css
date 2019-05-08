@@ -312,33 +312,34 @@ img.leaflet-tile {
 
 table {
     font-family: arial, sans-serif;
-    font-size: 15px;
     width: 30vw;
-    border: 1px solid #000;
+    border: 1px solid #404040;
     border-collapse: collapse;
     background: transparent;
 }
 
 td {
     background-color: transparent;
-    height: 15px;
+    border: 1px solid #404040;
+    height: 0.8em;
     text-align: center;
-    padding-right: 5px;
-    border-width: 1px 1px 0 1px;
-    border-style: solid;
+    padding: 2px;
 }
 
 th {
-    background-color: transparent;
-    height: 15px;
+    background-color: rgba(56, 181, 173, 0.7);
+    border: 1px solid #404040;
+    height: 1em;
     font-weight: bold;
-    border: 1px solid #000;
+    color: white;
+    padding: 4px;
 }
 
 tr {
     background-color: transparent;
-    font-weight: bold;
-    border: 1px solid #000;
+    border: 1px solid #404040;
+    font-weight: lighter;
+    padding: 2px;
 }
 
 
