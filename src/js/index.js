@@ -143,7 +143,6 @@ if (location.hash) {
 	}
 }
 
-
 window.onload = function () {
 	//	HEXBINS
 	L.HexbinLayer = L.Layer.extend({
@@ -170,10 +169,7 @@ window.onload = function () {
 			lat: function (d) {
 				return d.latitude;
 			},
-			value: function (d) {
-//				Median everywhere!
-				return median(d, (o) => o.o.data[user_selected_value]);
-			}
+			value: function (d) { return data_median(d); },
 		},
 
 		initialize(options) {
@@ -341,14 +337,14 @@ window.onload = function () {
 
 			// Update - set the fill and opacity on a transition (opacity is re-applied in case the enter transition was cancelled)
 			join.transition().duration(this.options.duration)
-				.attr('fill', (d) => this._colorScale(this.options.value(d)))
+				.attr('fill', (d) => typeof this.options.value(d) === 'undefined' ? '#808080' : this._colorScale(this.options.value(d)))
 				.attr('fill-opacity', this.options.opacity)
 				.attr('stroke-opacity', this.options.opacity);
 
 			// Enter - establish the path, the fill, and the initial opacity
 			join.enter().append('path').attr('class', 'hexbin-hexagon')
 				.attr('d', (d) => 'M' + d.x + ',' + d.y + hexbin.hexagon())
-				.attr('fill', (d) => this._colorScale(this.options.value(d)))
+				.attr('fill', (d) => typeof this.options.value(d) === 'undefined' ? '#808080' : this._colorScale(this.options.value(d)))
 				.attr('fill-opacity', 0.01)
 				.attr('stroke-opacity', 0.01)
 				.on('mouseover', this.options.mouseover)
@@ -452,19 +448,29 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 //	REVOIR LE DOUBLECLIQUE
 
 	map.on('click', function (e) {
-		map.clicked = map.clicked + 1;
-		timeout(function () {
-			if (map.clicked === 1) {
-				map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
+		/* if the user clicks anywhere outside the opened select drop down, then close all select boxes */
+		if (! d3.select("#custom-select").select(".select-items").empty()) {
+			d3.select("#custom-select").select(".select-items").remove();
+		} else {
+			map.clicked = map.clicked + 1;
+			timeout(function () {
+				if (map.clicked === 1) {
+					map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
+				}
 				map.clicked = 0;
-			}
-		}, 300);
+			}, 300);
+		}
 	});
 	map.on('dblclick', function () {
 		map.clicked = 0;
 		map.zoomIn();
 	});
 };
+
+function data_median(data) {
+	var d_temp = data.filter(d => !d.o.indoor);
+	return median(d_temp, (o) => o.o.data[user_selected_value]);
+}
 
 function switchLegend(val) {
 	d3.select('#legendcontainer').selectAll("[id^=legend_]").style("display", "none");
@@ -501,11 +507,6 @@ function toggleExplanation() {
 		d3.select("#explanation").html(translate.tr(lang, "Show explanation"));
 	}
 }
-
-/* if the user clicks anywhere outside the select drop down, then close all select boxes */
-document.getElementById("map").addEventListener("click", function () {
-	d3.select("#custom-select").select(".select-items").remove();
-});
 
 function ready(num) {
 	const dateParser = timeParse("%Y-%m-%d %H:%M:%S");
@@ -562,11 +563,11 @@ function sensorNr(data) {
 
 	let textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>" + translate.tr(lang, 'Sensor') + "</th><th class = 'title'>" + translate.tr(lang, titles[user_selected_value]) + "</th></tr>";
 	if (data.length > 1) {
-		textefin += "<tr><td class='idsens'>Median " + data.length + " Sens.</td><td>" + parseInt(median(data, (o) => o.o.data[user_selected_value])) + "</td></tr>";
+		textefin += "<tr><td class='idsens'>Median " + data.length + " Sens.</td><td>" + parseInt(data_median(data)) + "</td></tr>";
 	}
 	let sensors = '';
 	data.forEach(function (i) {
-		sensors += "<tr><td class='idsens' id='id_" + i.o.id + "'>" + inner_pre + i.o.id + "</td>";
+		sensors += "<tr><td class='idsens' id='id_" + i.o.id + "'>" + inner_pre + i.o.id + (i.o.indoor? " (indoor)":"") +"</td>";
 		if (user_selected_value === "PM10") {
 			sensors += "<td>" + i.o.data[user_selected_value] + "</td></tr>";
 		}

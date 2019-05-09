@@ -130,8 +130,7 @@ let api = {
 				if (num === 1) {
 					let cells = _.chain(json)
 						.filter((sensor) =>
-							!(sensor.location.indoor)
-							&& typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
+							typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 							&& api.pm_sensors[sensor.sensor.sensor_type.name]
 							&& api.checkValues(parseInt(getRightValue(sensor.sensordatavalues, "P1")), "PM10")
 							&& api.checkValues(parseInt(getRightValue(sensor.sensordatavalues, "P2")), "PM25")
@@ -139,13 +138,14 @@ let api = {
 						.map((values) => {
 							if (values.timestamp > timestamp_data) timestamp_data = values.timestamp;
 							return {
-								latitude: Number(values.location.latitude),
-								longitude: Number(values.location.longitude),
-								id: values.sensor.id,
 								data: {
 									PM10: parseInt(getRightValue(values.sensordatavalues, "P1")),
 									PM25: parseInt(getRightValue(values.sensordatavalues, "P2"))
-								}
+								},
+								id: values.sensor.id,
+								latitude: Number(values.location.latitude),
+								longitude: Number(values.location.longitude),
+								"indoor": values.location.indoor,
 							}
 						})
 						.value();
@@ -153,8 +153,7 @@ let api = {
 				} else if (num === 2) {
 					let cells = _.chain(json)
 						.filter((sensor) =>
-							!(sensor.location.indoor)
-							&& typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
+							typeof api.pm_sensors[sensor.sensor.sensor_type.name] != "undefined"
 							&& api.pm_sensors[sensor.sensor.sensor_type.name]
 						)
 						.map((values) => {
@@ -173,7 +172,8 @@ let api = {
 								},
 								"id": values.sensor.id,
 								"latitude": values.location.latitude,
-								"longitude": values.location.longitude
+								"longitude": values.location.longitude,
+								"indoor": values.location.indoor,
 							}
 						})
 						.filter(function (values) {
@@ -184,8 +184,7 @@ let api = {
 				} else {
 					let cells = _.chain(json)
 						.filter((sensor) =>
-							!(sensor.location.indoor)
-							&& typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
+							typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
 							&& api.thp_sensors[sensor.sensor.sensor_type.name]
 						)
 						.map((values) => {
@@ -198,7 +197,8 @@ let api = {
 								},
 								"id": values.sensor.id,
 								"latitude": values.location.latitude,
-								"longitude": values.location.longitude
+								"longitude": values.location.longitude,
+								"indoor": values.location.indoor,
 							}
 						})
 						.value();
