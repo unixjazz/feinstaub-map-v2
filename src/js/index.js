@@ -144,31 +144,6 @@ if (location.hash) {
 }
 
 
-//MENU
-
-// const menu = {
-// 	open: () => {
-// 		document.getElementById("menu").innerHTML = "&#9776;";
-// 		document.querySelector("#sidebar").style.display = "none";
-// 		if (!document.getElementById("#results").empty()) {
-// 			document.getElementById("#results").remove();
-// 			console.log("open sidebar")
-// 		}
-// 	},
-// 	close: () => {
-// 		document.getElementById("menu").innerHTML = "&#10006;";
-// 		document.querySelector("#sidebar").style.display = "block";
-// 		console.log("close sidebar")
-// 	},
-// 	toggle: () => {
-// 		if (document.querySelector("#sidebar").style("display") === "block") {
-// 			this.open();
-// 		} else {
-// 			this.close();
-// 		}
-// 	}
-// };
-
 window.onload = function () {
 	//	HEXBINS
 	L.HexbinLayer = L.Layer.extend({
@@ -430,8 +405,10 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 		d3.select(this).text(translate.tr(lang, d3.select(this).text()));
 	});
 	custom_select.select("select").property("value", config.selection);
-	custom_select.append("div").attr("class", "select-selected").html(translate.tr(lang, d3.select("#custom-select").select("select").select("option:checked").text())).on("click", showAllSelect);
+	custom_select.append("div").attr("class", "select-selected").html(translate.tr(lang,
+		custom_select.select("select").select("option:checked").text())).on("click", showAllSelect);
 	custom_select.style("display", "inline-block");
+
 	switchLegend(user_selected_value);
 
 	map.setView(coordsCenter, zoomLevel);
@@ -494,6 +471,7 @@ function switchLegend(val) {
 	d3.select('#legend_' + val).style("display", "block");
 }
 
+/*  Menu and Dropdown */
 function openSidebar() {
 	document.getElementById("menu").innerHTML = "&#10006;";
 	document.getElementById("sidebar").style.display = "block";
@@ -523,6 +501,11 @@ function toggleExplanation() {
 		d3.select("#explanation").html(translate.tr(lang, "Show explanation"));
 	}
 }
+
+/* if the user clicks anywhere outside the select drop down, then close all select boxes */
+document.getElementById("map").addEventListener("click", function () {
+	d3.select("#custom-select").select(".select-items").remove();
+});
 
 function ready(num) {
 	const dateParser = timeParse("%Y-%m-%d %H:%M:%S");
