@@ -36,7 +36,8 @@ import '../favicons/favicon.ico';
 import '../favicons/mstile-144x144.png';
 import '../favicons/browserconfig.xml';
 
-
+// empty robots.txt
+import '../robots.txt';
 
 // declare variables
 let hexagonheatmap, hmhexaPM_aktuell, hmhexaPM_AQI, hmhexa_t_h_p;
