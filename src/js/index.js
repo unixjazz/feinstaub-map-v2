@@ -25,19 +25,7 @@ import * as zooms from './zooms.js';
 import * as translate from './translate.js';
 
 // favicon config
-import '../favicons/apple-touch-icon.png';
-import '../favicons/favicon-32x32.png';
-import '../favicons/favicon-194x194.png';
-import '../favicons/android-chrome-192x192.png';
-import '../favicons/favicon-16x16.png';
-import '../favicons/site.webmanifest';
-import '../favicons/safari-pinned-tab.svg';
-import '../favicons/favicon.ico';
-import '../favicons/mstile-144x144.png';
-import '../favicons/browserconfig.xml';
-
-// empty robots.txt
-import '../robots.txt';
+import './static-files'
 
 // declare variables
 let hexagonheatmap, hmhexaPM_aktuell, hmhexaPM_AQI, hmhexa_t_h_p;
