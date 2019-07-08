@@ -88,8 +88,8 @@ let api = {
 						index = calculate_aqi_us(300, 201, 250.4, 150.5, val.toFixed(1))
 					} else if (val.toFixed(1) <= 350.4) {
 						index = calculate_aqi_us(400, 301, 350.4, 250.5, val.toFixed(1))
-					} else if (val.toFixed(1) <= 550.4) {
-						index = calculate_aqi_us(500, 401, 550.4, 350.5, val.toFixed(1))
+					} else if (val.toFixed(1) <= 500.4) {
+						index = calculate_aqi_us(500, 401, 500.4, 350.5, val.toFixed(1))
 					} else {
 						index = 500
 					}
