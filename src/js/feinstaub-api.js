@@ -29,6 +29,10 @@ let api = {
 		"SHT31": true,
 		"SHT35": true,
 	},
+	
+	noise_sensors: {
+		"Laerm": true,
+	},
 
 	checkValues(obj, sel) {
 		let result = false;
@@ -44,6 +48,8 @@ let api = {
 			} else if ((sel === "PM25") && (obj < 900)) {
 				result = true;
 			} else if (sel === "Official_AQI_US") {
+				result = true;
+			} else if (sel === "Noise") {
 				result = true;
 			}
 		}
@@ -181,7 +187,7 @@ let api = {
 						})
 						.value();
 					return Promise.resolve({cells: cells, timestamp: timestamp_data});
-				} else {
+				} else if (num === 3) {
 					let cells = _.chain(json)
 						.filter((sensor) =>
 							typeof api.thp_sensors[sensor.sensor.sensor_type.name] != "undefined"
@@ -194,6 +200,26 @@ let api = {
 									"Pressure": parseInt(getRightValue(values.sensordatavalues, "pressure_at_sealevel")) / 100,
 									"Humidity": parseInt(getRightValue(values.sensordatavalues, "humidity")),
 									"Temperature": parseInt(getRightValue(values.sensordatavalues, "temperature"))
+								},
+								"id": values.sensor.id,
+								"latitude": values.location.latitude,
+								"longitude": values.location.longitude,
+								"indoor": values.location.indoor,
+							}
+						})
+						.value();
+					return Promise.resolve({cells: cells, timestamp: timestamp_data});
+				} else if (num === 4) {
+					let cells = _.chain(json)
+						.filter((sensor) =>
+							typeof api.noise_sensors[sensor.sensor.sensor_type.name] != "undefined"
+							&& api.noise_sensors[sensor.sensor.sensor_type.name]
+						)
+						.map((values) => {
+							if (values.timestamp > timestamp_data) timestamp_data = values.timestamp;
+							return {
+								"data": {
+									"Noise": parseInt(getRightValue(values.sensordatavalues, "noise_LAeq")),
 								},
 								"id": values.sensor.id,
 								"latitude": values.location.latitude,

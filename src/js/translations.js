@@ -15,6 +15,9 @@ module.exports = {
 	"Pressure hPa": {
 		"de": "Luftdruck hPa",
 	},
+	"Noise dBA": {
+		"de": "Lautstärke dBA",
+	},
 
 // select options
 	" Temperature": {
@@ -25,6 +28,9 @@ module.exports = {
 	},
 	" Pressure": {
 		"de": " Luftdruck",
+	},
+	" Noise": {
+		"de": " Lautstärke",
 	},
 
 // sidebar
