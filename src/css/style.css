@@ -412,5 +412,5 @@ tr {
 #noise_option::after {
 	content: " (beta)";
 	vertical-align: super;
-	font-size: smaller;
+	font-size: small;
 }
