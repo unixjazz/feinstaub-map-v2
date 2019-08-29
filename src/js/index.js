@@ -114,7 +114,8 @@ new L.Hash(map);
 
 // define query object
 const query = {
-	no_overlay: "false"
+	no_overlay: "false",
+	selection: config.selection
 };
 // iife function to read query parameter and fill query object
 (function () {
@@ -129,6 +130,11 @@ const query = {
 
 // show betterplace overlay
 if (query.no_overlay === "false") d3.select("#betterplace").style("display", "inline-block");
+
+config.selection = query.selection;
+d3.select("#custom-select").select("select").property("value", config.selection);
+user_selected_value = config.selection;
+
 
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
@@ -193,17 +199,13 @@ window.onload = function () {
 		// Make hex radius dynamic for different zoom levels to give a nicer overview of the sensors as well as making sure that the hex grid does not cover the whole world when zooming out
 		getFlexRadius() {
 			console.log(user_selected_value);
-//			if (user_selected_value != "Noise") {
-				if (this.map.getZoom() < 3) {
-					return this.options.radius / (3 * (4 - this.map.getZoom()));
-				} else if (this.map.getZoom() > 2 && this.map.getZoom() < 8) {
-					return this.options.radius / (9 - this.map.getZoom());
-				} else {
-					return this.options.radius;
-				}
-//			} else {
-//				return 8*this.options.radius/this.map.getZoom();
-//			}
+			if (this.map.getZoom() < 3) {
+				return this.options.radius / (3 * (4 - this.map.getZoom()));
+			} else if (this.map.getZoom() > 2 && this.map.getZoom() < 8) {
+				return this.options.radius / (9 - this.map.getZoom());
+			} else {
+				return this.options.radius;
+			}
 		},
 
 		onAdd(map) {
@@ -411,10 +413,10 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 	//	Select
 	const custom_select = d3.select("#custom-select");
+	custom_select.select("select").property("value", config.selection);
 	custom_select.select("select").selectAll("option").each(function () {
 		d3.select(this).html(translate.tr(lang, d3.select(this).html()));
 	});
-	custom_select.select("select").property("value", config.selection);
 	custom_select.append("div").attr("class", "select-selected").html("<span>"+translate.tr(lang,
 		custom_select.select("select").select("option:checked").html())+"</span>").on("click", showAllSelect);
 	custom_select.style("display", "inline-block");
@@ -488,9 +490,13 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 };
 
 function data_median(data) {
+	function sort_num(a,b) {
+		var c = a - b;
+		return (c < 0 ? -1 : (c = 0 ? 0 : 1));
+	}
 	var d_temp = data.filter(d => !d.o.indoor)
 					.map(o => o.o.data[user_selected_value])
-					.sort();
+					.sort(sort_num);
 	return median(d_temp);
 }
 
