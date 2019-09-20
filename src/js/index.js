@@ -114,7 +114,7 @@ new L.Hash(map);
 
 // define query object
 const query = {
-	no_overlay: "false",
+	nooverlay: "false",
 	selection: config.selection
 };
 // iife function to read query parameter and fill query object
@@ -122,14 +122,16 @@ const query = {
 	let telem;
 	const search_values = location.search.replace('\?', '').split('&');
 	for (let i = 0; i < search_values.length; i++) {
+		console.log(search_values[i]);
 		telem = search_values[i].split('=');
+		console.log(telem);
 		query[telem[0]] = '';
 		if (typeof telem[1] != 'undefined') query[telem[0]] = telem[1];
 	}
 })();
 
 // show betterplace overlay
-if (query.no_overlay === "false") d3.select("#betterplace").style("display", "inline-block");
+if (query.nooverlay === "false") d3.select("#betterplace").style("display", "inline-block");
 
 config.selection = query.selection;
 d3.select("#custom-select").select("select").property("value", config.selection);
