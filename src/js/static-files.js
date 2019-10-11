@@ -1,6 +1,10 @@
 // copy empty robots.txt
 import '../robots.txt';
 
+// copy images
+import '../images/lab_marker.png';
+import '../images/lab_marker.svg';
+
 // copy favicons
 import '../favicons/android-chrome-144x144.png';
 import '../favicons/android-chrome-192x192.png';

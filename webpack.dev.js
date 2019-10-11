@@ -50,7 +50,12 @@ module.exports = {
 			},
 			{
 				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i, 
+				include: /favicons/,
 				loader: "file-loader?name=/favicons/[name].[ext]"
+			},
+			{
+				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i,
+				loader: "file-loader?name=/images/[name].[ext]"
 			},
 			{
 				test: /\.(txt)$/i, 
