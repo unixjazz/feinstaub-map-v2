@@ -532,7 +532,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 						riseOnHover: true
 					}
 				)
-				.bindPopup(data[i].text)
+				.bindPopup(data[i].text + "<br /><br />Your location is missing? Add it <a href='https://github.com/opendata-stuttgart/luftdaten-local-labs' target='_blank' rel='noreferrer'>here</a>.")
 				.addTo(map)
 		}
 	}).catch(function(error) {
