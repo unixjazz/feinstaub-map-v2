@@ -32,9 +32,6 @@ import './static-files'
 // declare variables
 let hexagonheatmap, hmhexaPM_aktuell, hmhexaPM_AQI, hmhexa_t_h_p, hmhexa_noise;
 
-// selected value from the dropdown
-let user_selected_value = config.selection;
-
 // save browser lanuage for translation
 const lang = translate.getFirstBrowserLanguage().substring(0, 2);
 
@@ -145,11 +142,10 @@ const query = {
 // show betterplace overlay
 if (query.nooverlay === "false") d3.select("#betterplace").style("display", "inline-block");
 
-config.selection = query.selection;
+config.selection = (query.sensor !== undefined) ? query.sensor : config.selection;
 d3.select("#custom-select").select("select").property("value", config.selection);
-user_selected_value = config.selection;
 
-
+let user_selected_value = config.selection;
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
 
