@@ -33,7 +33,7 @@ npm start
 ```
 
 ### Publish
-build all files needed to run on a webserver, files willl be compileed into `dist/`):
+build all files needed to run on a webserver, files will be compiled into `dist/`):
 ```
 npm run build
 npm run ghpages
