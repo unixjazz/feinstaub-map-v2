@@ -153,6 +153,10 @@ user_selected_value = config.selection;
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
 
+var data_host = "";
+if (location.hostname.indexOf("maps.sensor.community") === -1 && location.hostname.indexOf("maps.luftdaten.info") === -1) {
+	data_host = "https://maps.sensor.community";
+}
 if (location.hash) {
 	const hash_params = location.hash.split("/");
 	coordsCenter = [hash_params[1], hash_params[2]];
@@ -443,21 +447,21 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 
 //	REVOIR ORDRE DANS FONCTION READY
 	function retrieveData() {
-		api.getData("https://maps.luftdaten.info/data/v2/data.dust.min.json", 1).then(function (result) {
+		api.getData(data_host + "/data/v2/data.dust.min.json", 1).then(function (result) {
 			hmhexaPM_aktuell = result.cells;
 			if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 			ready(1);
-			api.getData("https://maps.luftdaten.info/data/v2/data.24h.json", 2).then(function (result) {
+			api.getData(data_host + "/data/v2/data.24h.json", 2).then(function (result) {
 				hmhexaPM_AQI = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(2);
 			});
-			api.getData("https://maps.luftdaten.info/data/v2/data.temp.min.json", 3).then(function (result) {
+			api.getData(data_host + "/data/v2/data.temp.min.json", 3).then(function (result) {
 				hmhexa_t_h_p = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(3);
 			});
-			api.getData("https://maps.luftdaten.info/data/v1/data.noise.json", 4).then(function (result) {
+			api.getData(data_host + "/data/v1/data.noise.json", 4).then(function (result) {
 				hmhexa_noise = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(4);
@@ -520,7 +524,7 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
         options: labelBaseOptions
     });
 
-	fetch("https://opendata-stuttgart.github.io/luftdaten-local-labs/labs.json")
+	fetch(data_host + "/local-labs/labs.json")
 	.then(checkStatus)
 	.then(parseJSON)
 	.then(function(data) {
