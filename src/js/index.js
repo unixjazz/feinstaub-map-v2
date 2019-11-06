@@ -106,6 +106,14 @@ const div = d3.select("#sidebar").append("div").attr("id", "table").style("displ
 
 const map = L.map('map', {zoomControl: true, minZoom: config.minZoom, maxZoom: config.maxZoom, doubleClickZoom: false});
 
+var data_host = "";
+if (location.hostname.indexOf("maps.sensor.community") === -1 && location.hostname.indexOf("maps.luftdaten.info") === -1) {
+	data_host = "https://maps.sensor.community";
+	config.tiles = config.tiles_server + config.tiles_path;
+} else {
+	config.tiles = config.tiles_path;
+}
+
 const tiles = L.tileLayer(config.tiles, {
 	attribution: config.attribution,
 	maxZoom: config.maxZoom,
@@ -153,10 +161,6 @@ user_selected_value = config.selection;
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
 
-var data_host = "";
-if (location.hostname.indexOf("maps.sensor.community") === -1 && location.hostname.indexOf("maps.luftdaten.info") === -1) {
-	data_host = "https://maps.sensor.community";
-}
 if (location.hash) {
 	const hash_params = location.hash.split("/");
 	coordsCenter = [hash_params[1], hash_params[2]];
