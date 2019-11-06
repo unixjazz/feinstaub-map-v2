@@ -656,11 +656,11 @@ function sensorNr(data) {
 
 	let textefin = "<table id='results' style='width:380px;'><tr><th class ='title'>" + translate.tr(lang, 'Sensor') + "</th><th class = 'title'>" + translate.tr(lang, titles[user_selected_value]) + "</th></tr>";
 	if (data.length > 1) {
-		textefin += "<tr><td class='idsens'>Median " + data.length + " Sens.</td><td>" + parseInt(data_median(data)) + "</td></tr>";
+		textefin += "<tr><td class='idsens'>Median " + data.length + " Sens.</td><td>" + (isNaN(parseInt(data_median(data))) ? "-" : parseInt(data_median(data))) + "</td></tr>";
 	}
 	let sensors = '';
 	data.forEach(function (i) {
-		sensors += "<tr><td class='idsens' id='id_" + i.o.id + "'>" + inner_pre + i.o.id + (i.o.indoor? " (indoor)":"") +"</td>";
+		sensors += "<tr><td class='idsens' id='id_" + i.o.id + (i.o.indoor? "_indoor":"") + "'>" + inner_pre + i.o.id + (i.o.indoor? " (indoor)":"") +"</td>";
 		if (user_selected_value === "PM10") {
 			sensors += "<td>" + i.o.data[user_selected_value] + "</td></tr>";
 		}
@@ -702,24 +702,26 @@ function displayGraph(id) {
 	let inner_pre = "";
 	const panel_str = "<iframe src='https://maps.luftdaten.info/grafana/d-solo/000000004/single-sensor-view?orgId=1&panelId=<PANELID>&var-node=<SENSOR>' width='290' height='200' frameborder='0'></iframe>";
 	const sens = id.substr(3);
+	const sens_id = sens.replace("_indoor", "");
+	const sens_desc = sens.replace("_indoor", " (indoor)");
 
-	if (!openedGraph1.includes(sens)) {
-		openedGraph1.push(sens);
+	if (!openedGraph1.includes(sens_id)) {
+		openedGraph1.push(sens_id);
 
-		const iddiv = "#graph_" + sens;
+		const iddiv = "#graph_" + sens_id;
 
 		d3.select(iddiv).append("td")
-			.attr("id", "frame_" + sens)
+			.attr("id", "frame_" + sens_id)
 			.attr("colspan", "2")
-			.html((panelIDs[user_selected_value][0] > 0 ? panel_str.replace("<PANELID>", panelIDs[user_selected_value][0]).replace("<SENSOR>", sens) + "<br/>":"") + (panelIDs[user_selected_value][1] > 0 ? panel_str.replace("<PANELID>", panelIDs[user_selected_value][1]).replace("<SENSOR>", sens):""));
+			.html((panelIDs[user_selected_value][0] > 0 ? panel_str.replace("<PANELID>", panelIDs[user_selected_value][0]).replace("<SENSOR>", sens_id) + "<br/>":"") + (panelIDs[user_selected_value][1] > 0 ? panel_str.replace("<PANELID>", panelIDs[user_selected_value][1]).replace("<SENSOR>", sens_id):""));
 
 		if (user_selected_value !== "Official_AQI_US") inner_pre = "(-) ";
-		d3.select("#id_" + sens).html(inner_pre + "#" + sens);
+		d3.select("#id_" + sens).html(inner_pre + "#" + sens_desc);
 	} else {
 		if (user_selected_value !== "Official_AQI_US") inner_pre = "(+) ";
-		d3.select("#id_" + sens).html(inner_pre + "#" + sens);
-		d3.select("#frame_" + sens).remove();
-		removeInArray(openedGraph1, sens);
+		d3.select("#id_" + sens).html(inner_pre + "#" + sens_desc);
+		d3.select("#frame_" + sens_id).remove();
+		removeInArray(openedGraph1, sens_id);
 	}
 }
 
