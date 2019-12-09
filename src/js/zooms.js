@@ -112,6 +112,7 @@ module.exports = {
 //	Russia
 	"russia": 3,
 	"moskow": 10,
+	"spb": 10,
 
 //	Serbia
 	"serbia": 7,
