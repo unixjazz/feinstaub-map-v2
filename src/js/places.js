@@ -367,6 +367,7 @@ module.exports = {
 //	Russia
 	"russia": [65, 90],
 	"moscow": [55.750, 37.617],
+	"spb": [59.934,30.3350],
 
 //	Serbia
 	"serbia": [44, 21],
