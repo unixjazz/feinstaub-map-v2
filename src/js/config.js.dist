@@ -6,6 +6,8 @@ module.exports = {
 	// phenomenon shown at start, possible values: PM10, PM25, Official_AQI_US, Temperature, Humidity, Pressure
 	"selection": "PM10",
 	// Tiles
-	"tiles": "https://maps.luftdaten.info/tiles/{z}/{x}/{y}.png",
+	"tiles": "https://{s}.maps.luftdaten.info/tiles/{z}/{x}/{y}.png",
+	"tiles_path": "/{z}/{x}/{y}.png",
+	"tiles_subdomains": ["osmc1","osmc2","osmc3"],
 	"attribution": "Map data © <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors"
 }
