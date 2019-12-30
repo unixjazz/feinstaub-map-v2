@@ -107,17 +107,14 @@ const div = d3.select("#sidebar").append("div").attr("id", "table").style("displ
 const map = L.map('map', {zoomControl: true, minZoom: config.minZoom, maxZoom: config.maxZoom, doubleClickZoom: false});
 
 var data_host = "";
-if (location.hostname.indexOf("maps.sensor.community") === -1 && location.hostname.indexOf("maps.luftdaten.info") === -1) {
-	data_host = "https://maps.sensor.community";
-	config.tiles = config.tiles_server + config.tiles_path;
-} else {
-	config.tiles = config.tiles_path;
-}
+data_host = "https://maps.sensor.community";
+config.tiles = config.tiles_server + config.tiles_path;
 
 const tiles = L.tileLayer(config.tiles, {
 	attribution: config.attribution,
 	maxZoom: config.maxZoom,
-	minZoom: config.minZoom
+	minZoom: config.minZoom,
+	subdomains: config.tiles_subdomains
 }).addTo(map);
 
 var labelBaseOptions = {
