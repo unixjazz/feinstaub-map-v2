@@ -27,7 +27,7 @@
     "mini-css-extract-plugin": "^0.6.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "style-loader": "^0.23.1",
-    "webpack": "^4.29.6",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1"
   },
@@ -43,7 +43,7 @@
     "d3-transition": "^1.2.0",
     "leaflet": "^1.4.0",
     "leaflet-hash": "^0.2.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "whatwg-fetch": "^3.0.0"
   }
 }
