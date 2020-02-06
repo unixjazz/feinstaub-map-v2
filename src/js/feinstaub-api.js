@@ -20,7 +20,7 @@ let api = {
 		"BMP180": true,
 		"BMP280": true,
 		"BME280": true,
-		"HTU21B": true,
+		"HTU21D": true,
 		"DS18B20": true,
 		"SHT11": true,
 		"SHT12": true,
