@@ -19,6 +19,7 @@ import 'whatwg-fetch';
 const d3 = Object.assign({}, d3_Selection, d3_Hexbin);
 
 import api from './feinstaub-api';
+import labs from './labs.js';
 import * as config from './config.js';
 
 import '../css/style.css';
@@ -116,16 +117,6 @@ const tiles = L.tileLayer(config.tiles, {
 	minZoom: config.minZoom,
 	subdomains: config.tiles_subdomains
 }).addTo(map);
-
-var labelBaseOptions = {
-	iconUrl: 'images/lab_marker.svg',
-	shadowUrl: null,
-	iconSize: new L.Point(21, 35),
-	iconAnchor: new L.Point(10, 34),
-	labelAnchor: new L.Point(25, 2),
-	wrapperAnchor: new L.Point(10, 35),
-	popupAnchor:  [-0, -35]
-};
 
 new L.Hash(map);
 
@@ -507,43 +498,9 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 		map.zoomIn();
 	});
 	
-	function checkStatus(response) {
-		if (response.status >= 200 && response.status < 300) {
-			return response
-		} else {
-			var error = new Error(response.statusText)
-			error.response = response
-			throw error
-		}
-	}
- 
-	function parseJSON(response) {
-		return response.json()
-	}
- 
-    var labelRight = L.Icon.extend({
-        options: labelBaseOptions
-    });
+	labs.getData(data_host + "/local-labs/labs.json", map);
 
-	fetch(data_host + "/local-labs/labs.json")
-	.then(checkStatus)
-	.then(parseJSON)
-	.then(function(data) {
-		for (var i = 0; i < data.length; i++) {
-			var marker = L.marker(
-					[data[i].lat,data[i].lon],
-					{
-						icon: new labelRight({ labelText: "<a href=\"#\"></a>"}),
-						riseOnHover: true
-					}
-				)
-				.bindPopup(data[i].text + "<br /><br />Your location is missing? Add it <a href='https://github.com/opendata-stuttgart/luftdaten-local-labs' target='_blank' rel='noreferrer'>here</a>.")
-				.addTo(map)
-		}
-	}).catch(function(error) {
-			console.log('request failed', error)
-	})
-}
+} 
 
 function data_median(data) {
 	function sort_num(a,b) {

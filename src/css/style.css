@@ -414,3 +414,64 @@ tr {
 	vertical-align: super;
 	font-size: small;
 }
+
+.labs_facebook:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/facebook.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_twitter:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/twitter.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_github:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/github.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_gitlab:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/gitlab.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_mastodon:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/mastodon.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_meetup:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/meetup.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+.labs_telegram:before {
+	display: inline-block;
+	padding-right: 5px;
+	content: url("../images/telegram.svg");
+	width: 15px;
+	vertical-align: middle;
+}
+
+.labs_sociallinks {
+	border: none;
+	width: auto;
+}
+
+.labs_sociallinks td, .labs_sociallinks tr {
+	text-align: left;
+	vertical-align: middle;
+	border: none;
+}

@@ -49,12 +49,19 @@ module.exports = {
 				use: ['file-loader']
 			},
 			{
-				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i, 
+				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i,
+				include: /favicon/,
 				loader: "file-loader?name=/favicons/[name].[ext]"
 			},
 			{
-				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i, 
-				loader: "file-loader?name=/images/[name].[ext]"
+				test: /\.(jpe?g|png|gif|svg|ico|xml|webmanifest)$/i,
+				include: /images/,
+				loader: "file-loader",
+				options: {
+					outputPath: 'images/',
+					publicPath: 'images/',
+					name: '[name].[ext]'
+				}
 			},
 			{
 				test: /\.(txt)$/i, 
