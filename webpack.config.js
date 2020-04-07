@@ -16,7 +16,15 @@ module.exports = {
 	// https://webpack.js.org/configuration/dev-server/
 	devServer: {
 		host: '127.0.0.1',
-		port: 8080
+		port: 8080,
+		disableHostCheck: true,
+		https: true,
+		headers: {
+    			"Access-Control-Allow-Origin": "*",
+    			"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+    			"Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
+			"Access-Control-Allow-Credentials": "true"
+		}
 	},
 	optimization: {
 		minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],

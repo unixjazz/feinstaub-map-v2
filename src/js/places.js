@@ -500,6 +500,7 @@ module.exports = {
 	"usa": [40, -100],
 	"united-states": [40, -100],
 	"portland": [45.52, -122.6819],
+	"charlottesville": [38.0322, -78.4888],
 
 //	---- Asia ----
 

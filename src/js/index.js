@@ -73,15 +73,7 @@ const scale_options = {
 	"Humidity": {
 		valueDomain: [0, 20, 40, 60, 80, 100],
 		colorRange: ['#c41a0a', '#f47a0b', '#f4e60b', '#aff474', '#6dbcff', '#00528f']
-	},
-	"Pressure": {
-		valueDomain: [926, 947.75, 969.50, 991.25, 1013, 1034.75, 1056.50, 1078.25, 1100],
-		colorRange: ["#dd2e97", "#6b3b8f", "#2979b9", "#02B9ed", "#13ae52", "#c9d841", "#fad635", "#f0a03d", "#892725"]
-	},
-	"Noise": {
-		valueDomain: [0, 20, 40, 60, 80, 100],
-		colorRange: ['#00528f', '#6dbcff', '#aff474', '#f4e60b', '#f47a0b', '#c41a0a']
-	},
+	}
 };
 
 const titles = {
@@ -90,8 +82,6 @@ const titles = {
 	"Official_AQI_US": "AQI US",
 	"Temperature": "Temperature °C",
 	"Humidity": "Humidity %",
-	"Pressure": "Pressure hPa",
-	"Noise": "Noise dBA",
 };
 
 const panelIDs = {
@@ -99,8 +89,6 @@ const panelIDs = {
 	"PM25": [2, 1],
 	"Temperature": [4, 3],
 	"Humidity": [6, 5],
-	"Pressure": [8, 7],
-	"Noise": [0, 12]
 };
 
 const div = d3.select("#sidebar").append("div").attr("id", "table").style("display", "none");
@@ -138,13 +126,9 @@ const query = {
 	}
 })();
 
-// show betterplace overlay
-if (query.nooverlay === "false") d3.select("#betterplace").style("display", "inline-block");
-
 config.selection = query.selection;
 d3.select("#custom-select").select("select").property("value", config.selection);
 user_selected_value = config.selection;
-
 
 let coordsCenter = config.center;
 let zoomLevel = config.zoom;
@@ -401,13 +385,11 @@ window.onload = function () {
 	// enable elements
 	// d3.select('#legend_PM10').style("display", "block");
 	d3.select('#explanation').html(translate.tr(lang, 'Show explanation'));
-	d3.select('#map-info').html(translate.tr(lang, "<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, pressure, AQI). You can refer to the scale on the left side of the map.</p> \
+	d3.select('#map-info').html(translate.tr(lang, "<p>The hexagons represent the median of the current values of the sensors which are contained in the area, according to the option selected (PM10, PM2.5, temperature, relative humidity, AQI). You can refer to the scale on the left side of the map.</p> \
 <p>By clicking on a hexagon, you can display a list of all the corresponding sensors as a table. The first column lists the sensor-IDs. In the first line, you can see the amount of sensor in the area and the median value.</p> \
 <p>By clicking on the plus symbol next to a sensor ID, you can display two graphics: the individual measurements for the last 24 hours and the 24 hours floating mean for the last seven days. For technical reasons, the first of the 8 days displayed on the graphic has to stay empty.\
 The values are refreshed every 5 minutes in order to fit with the measurement frequency of the Airrohr sensors.</p> \
 <p>The Air Quality Index (AQI) is calculated according to the recommandations of the United States Environmental Protection Agency. Further information is available on the official page.(<a href='https://www.airnow.gov/index.cfm?action=aqibasics.aqi'>Link</a>). Hover over the AQI scale to display the levels of health concern.</p>"));
-	d3.select('#betterplace').html("<a title='" + translate.tr(lang, "Donate for Luftdaten.info (Hardware, Software) now on Betterplace.org") + " href='https://www.betterplace.org/de/projects/38071-fur-den-feinstaub-sensor-sds011-als-bastel-kit-spenden/' target='_blank' rel='noreferrer'>" + translate.tr(lang, "Donate for<br/>Luftdaten.info<br/>now on<br/><span>Betterplace.org</span>") + "</a>");
-
 	d3.select("#menu").on("click", toggleSidebar);
 	d3.select("#explanation").on("click", toggleExplanation);
 	d3.select("#legend_Official_AQI_US").selectAll(".tooltip").on("click", function () {
@@ -452,11 +434,6 @@ The values are refreshed every 5 minutes in order to fit with the measurement fr
 				hmhexa_t_h_p = result.cells;
 				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
 				ready(3);
-			});
-			api.getData(data_host + "/data/v1/data.noise.json", 4).then(function (result) {
-				hmhexa_noise = result.cells;
-				if (result.timestamp > timestamp_data) timestamp_data = result.timestamp;
-				ready(4);
 			});
 		});
 	}
@@ -567,15 +544,11 @@ function ready(num) {
 		hexagonheatmap.initialize(scale_options[user_selected_value]);
 		hexagonheatmap.data(hmhexaPM_AQI);
 	}
-	if (num === 3 && (user_selected_value === "Temperature" || user_selected_value === "Humidity" || user_selected_value === "Pressure")) {
+	if (num === 3 && (user_selected_value === "Temperature" || user_selected_value === "Humidity")) {
 		hexagonheatmap.initialize(scale_options[user_selected_value]);
 		hexagonheatmap.data(hmhexa_t_h_p.filter(function (value) {
 			return api.checkValues(value.data[user_selected_value], user_selected_value);
 		}));
-	}
-	if (num === 4 && user_selected_value === "Noise") {
-		hexagonheatmap.initialize(scale_options[user_selected_value]);
-		hexagonheatmap.data(hmhexa_noise);
 	}
 	d3.select("#loading").style("display", "none");
 }
@@ -591,13 +564,11 @@ function reloadMap(val) {
 		hexagonheatmap.data(hmhexaPM_aktuell);
 	} else if (val === "Official_AQI_US") {
 		hexagonheatmap.data(hmhexaPM_AQI);
-	} else if (val === "Temperature" || val === "Humidity" || val === "Pressure") {
+	} else if (val === "Temperature" || val === "Humidity") {
 		hexagonheatmap.data(hmhexa_t_h_p.filter(function (value) {
 			return api.checkValues(value.data[user_selected_value], user_selected_value);
 		}));
-	} else if (val === "Noise") {
-		hexagonheatmap.data(hmhexa_noise);
-	}
+	} 
 }
 
 function sensorNr(data) {
@@ -628,12 +599,6 @@ function sensorNr(data) {
 			sensors += "<td>" + i.o.data[user_selected_value] + "</td></tr>";
 		}
 		if (user_selected_value === "Humidity") {
-			sensors += "<td>" + i.o.data[user_selected_value] + "</td></tr>";
-		}
-		if (user_selected_value === "Pressure") {
-			sensors += "<td>" + i.o.data[user_selected_value].toFixed(1) + "</td></tr>";
-		}
-		if (user_selected_value === "Noise") {
 			sensors += "<td>" + i.o.data[user_selected_value] + "</td></tr>";
 		}
 		sensors += "<tr id='graph_" + i.o.id + "'></tr>";
@@ -710,11 +675,7 @@ function switchTo(element) {
 	custom_select.select("select").property("value", element.id.substring(12));
 	custom_select.select(".select-selected").html("<span>"+custom_select.select("select").select("option:checked").html()+"</span>");
 	user_selected_value = element.id.substring(12);
-	if (user_selected_value == "Noise") {
-		custom_select.select(".select-selected").select("span").attr("id","noise_option");
-	} else {
-		custom_select.select(".select-selected").select("span").attr("id",null);
-	}
+	custom_select.select(".select-selected").select("span").attr("id",null);
 	custom_select.select(".select-selected").attr("class", "select-selected");
 	reloadMap(user_selected_value);
 	custom_select.select(".select-items").remove();

@@ -15,32 +15,6 @@ body {
     pointer-events: none;
 }
 
-#betterplace {
-    font-size: 0.9em;
-    text-align: center;
-    border: 0;
-    position: relative;
-    top: 0;
-    left: 0;
-    float: left;
-    z-index: 500;
-    max-width: 35%;
-    display: none;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
-    pointer-events: all;
-}
-
-#betterplace a {
-    color: black;
-    text-decoration: none;
-}
-
-#betterplace span {
-    font-weight: bold;
-    color: rgb(56, 181, 173);
-}
-
 #update {
     color: white;
     font-weight: bold;
@@ -226,16 +200,6 @@ body {
 #legend_Humidity .gradient {
     background: -webkit-linear-gradient(bottom, #c41a0a 0%, #f47a0b 20%, #f4e60b 40%, #aff474 60%, #6dbcff 80%, #00528f 100%);
     background: linear-gradient(to top, #c41a0a 0%, #f47a0b 20%, #f4e60b 40%, #aff474 60%, #6dbcff 80%, #00528f 100%);
-}
-
-#legend_Pressure .gradient {
-    background: -webkit-linear-gradient(bottom, #dd2e97 0%, #6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
-    background: linear-gradient(to top, #dd2e97 0%, #6b3b8f 12.5%, #2979b9 25%, #02B9ed 37.5%, #13ae52 50%, #c9d841 62.5%, #fad635 75%, #f0a03d 87.5%, #892725 100%);
-}
-
-#legend_Noise .gradient {
-    background: -webkit-linear-gradient(bottom, #00528f 0%, #6dbcff 20%, #aff474 40%, #f4e60b 60%, #f47a0b 80%, #c41a0a 100%);
-    background: linear-gradient(to top, #00528f 0%, #6dbcff 20%, #aff474 40%, #f4e60b 60%, #f47a0b 80%, #c41a0a 100%);
 }
 
 #legend_Official_AQI_US {
